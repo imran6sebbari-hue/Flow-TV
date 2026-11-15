@@ -4,14 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flow TV</title>
-
-<!-- ربط الأيقونات وتطبيقات سطح المكتب -->
+<meta name="theme-color" content="#0b0b10">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
-
 <link rel="preconnect" href="https://image.tmdb.org">
 <link rel="preconnect" href="https://api.themoviedb.org">
 <style>
@@ -122,6 +120,8 @@ img{display:block}
 .c-title{margin-top:.5rem;font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .c-meta{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-top:.15rem}
 .star{color:#f5c518}
+.sk{width:var(--card-w);height:calc(var(--card-w) * 1.5);border-radius:10px;background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:sh 1.3s infinite;flex-shrink:0}
+@keyframes sh{to{background-position:-200% 0}}
 .empty{color:var(--muted);text-align:center;padding:3rem 0}
 
 /* details */
@@ -148,9 +148,14 @@ img{display:block}
 .cmt-h{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.85rem}
 #cmt-list{display:flex;flex-direction:column;gap:.6rem;max-height:14rem;overflow-y:auto}
 
+.more{flex:0 0 1px;width:1px;height:1px}
 .filters{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.2rem}
 .filters .input{width:auto;min-width:9rem}
-
+.prov{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-size:.85rem;color:var(--muted)}
+.prov a{display:inline-flex;align-items:center;gap:.4rem;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:.3rem .7rem;color:var(--text);text-decoration:none}
+.prov img{width:20px;height:20px;border-radius:5px}
+.attr{color:var(--muted);font-size:.75rem;text-align:center;margin-top:2rem;line-height:1.6}
+.p-hint{flex-basis:100%;color:var(--muted);font-size:.8rem}
 /* settings */
 .set{padding:1.5rem 2rem;max-width:70rem;margin:0 auto}
 .set-layout{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;min-height:32rem}
@@ -191,8 +196,11 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 #player.active{display:flex}
 .p-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
 .p-title{font-weight:700}
-.p-servers{display:flex;gap:.5rem;flex-wrap:wrap}
+.p-servers{display:flex;gap:.5rem}
 #player iframe{flex:1;width:100%;border:0;background:#000}
+
+/* lite mode */
+.lite *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
 
 @media(max-width:700px){
   .nav{flex-wrap:wrap;padding:.7rem 1rem}.search{order:5;max-width:none;flex-basis:100%}
@@ -207,11 +215,11 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 <!-- Profiles -->
 <div id="profiles-screen" class="screen center">
   <div class="logo">FLOW<b>TV</b></div>
-  <div class="sub" data-i18n="whowatch">من يشاهد الآن؟</div>
+  <div class="sub" data-i18n="whowatch"></div>
   <div class="profiles" id="profiles-list"></div>
   <div class="row-btns">
-    <button class="btn ghost focusable" data-act="addProfile" data-i18n="addProfile">إضافة حساب</button>
-    <button class="btn ghost focusable" data-act="openSettings" data-i18n="settings">الإعدادات</button>
+    <button class="btn ghost focusable" data-act="addProfile" data-i18n="addProfile"></button>
+    <button class="btn ghost focusable" data-act="openSettings" data-i18n="settings"></button>
   </div>
 </div>
 
@@ -220,11 +228,11 @@ input[type=range]{flex:1;accent-color:var(--accent)}
   <div class="panel">
     <div class="avatar" id="pin-avatar" style="margin:0 auto;width:5.5rem;height:5.5rem"></div>
     <h2 id="pin-name"></h2>
-    <p style="color:var(--muted)" data-i18n="enterPin">أدخل رمز الحماية (PIN)</p>
+    <p style="color:var(--muted)" data-i18n="enterPin"></p>
     <input type="password" id="pin-input" class="input focusable" inputmode="numeric" maxlength="6" placeholder="••••" style="text-align:center;letter-spacing:.4em">
     <div class="err" id="pin-err"></div>
-    <button class="btn focusable" style="justify-content:center" data-act="verifyPin" data-i18n="login">دخول</button>
-    <button class="btn ghost focusable" style="justify-content:center" data-act="showProfiles" data-i18n="switchProfile">تبديل الحساب</button>
+    <button class="btn focusable" style="justify-content:center" data-act="verifyPin" data-i18n="login"></button>
+    <button class="btn ghost focusable" style="justify-content:center" data-act="showProfiles" data-i18n="switchProfile"></button>
   </div>
 </div>
 
@@ -235,12 +243,12 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div class="clock" id="clock"></div>
     <div class="search">
       <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input type="text" id="search-input" class="input focusable" placeholder="ابحث عن فيلم أو مسلسل..." autocomplete="off">
+      <input type="text" id="search-input" class="input focusable" data-i18n-ph="search" autocomplete="off">
     </div>
     <div class="nav-actions">
-      <button class="pill focusable" data-act="openExplore"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>استكشاف</span></button>
+      <button class="pill focusable" data-act="openExplore"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span data-i18n="explore"></span></button>
       <button class="pill sq focusable" data-act="random" title="Random"><svg class="icon" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
-      <button class="pill focusable" data-act="openSettings"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l-.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>الإعدادات</span></button>
+      <button class="pill focusable" data-act="openSettings"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i18n="settings"></span></button>
       <button class="pill focusable" data-act="showProfiles"><span class="avatar" id="nav-avatar"></span><span id="nav-name"></span></button>
     </div>
   </div>
@@ -253,12 +261,13 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <h1 class="hero-title" id="hero-title"></h1>
         <p class="hero-desc" id="hero-desc"></p>
         <div class="hero-btns">
-          <button class="btn focusable" id="hero-play" data-act="openItem"><svg class="icon" viewBox="0 0 24 24" style="fill:currentColor"><path d="M7 4v16l13-8z"/></svg><span>شاهد الآن</span></button>
+          <button class="btn focusable" id="hero-play" data-act="openItem" data-af><svg class="icon" viewBox="0 0 24 24" style="fill:currentColor"><path d="M7 4v16l13-8z"/></svg><span data-i18n="watchNow"></span></button>
         </div>
       </div>
       <div class="dots" id="hero-dots"></div>
     </section>
     <div id="rows"></div>
+    <div class="attr">This product uses the TMDB API but is not endorsed or certified by TMDB.<br>Streaming availability data by JustWatch.</div>
   </div>
 </div>
 
@@ -266,26 +275,26 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 <div id="details-screen" class="screen">
   <div class="det">
     <div class="det-top">
-      <button class="btn ghost focusable" data-act="goBack">العودة للرئيسية</button>
+      <button class="btn ghost focusable" data-act="goBack" data-i18n="backHome"></button>
     </div>
     <div class="det-card" id="det-card"></div>
     <div id="series-area" style="display:none">
-      <div class="sec-title">الموسم</div>
+      <div class="sec-title" data-i18n="season"></div>
       <div class="chips" id="seasons"></div>
-      <div class="sec-title">الحلقة</div>
+      <div class="sec-title" data-i18n="episode"></div>
       <div class="eps" id="episodes"></div>
     </div>
     <div class="box">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem">
-        <h3>التقييمات والتعليقات</h3>
-        <span class="chip on" id="avg-rating">5.0 ★</span>
+        <h3 data-i18n="ratings"></h3>
+        <span class="chip on" id="avg-rating"></span>
       </div>
       <div class="cmt-form">
         <select id="cmt-rating" class="input focusable" style="width:9rem">
           <option value="5">★★★★★</option><option value="4">★★★★☆</option><option value="3">★★★☆☆</option><option value="2">★★☆☆☆</option><option value="1">★☆☆☆☆</option>
         </select>
-        <input type="text" id="cmt-text" class="input focusable" placeholder="اكتب تعليقك..." style="flex:1;min-width:14rem;width:auto">
-        <button class="btn focusable" data-act="addComment">إرسال</button>
+        <input type="text" id="cmt-text" class="input focusable" data-i18n-ph="writeComment" style="flex:1;min-width:14rem;width:auto">
+        <button class="btn focusable" data-act="addComment" data-i18n="send"></button>
       </div>
       <div id="cmt-list"></div>
     </div>
@@ -295,13 +304,16 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 <!-- Explore -->
 <div id="explore-screen" class="screen">
   <div class="det">
-    <div class="det-top"><h2>استكشاف</h2><button class="btn ghost focusable" data-act="goMain">العودة للرئيسية</button></div>
+    <div class="det-top"><h2 data-i18n="explore"></h2><button class="btn ghost focusable" data-act="goMain" data-i18n="backHome"></button></div>
     <div class="filters">
-      <select id="ex-type" class="input focusable"><option value="movie">أفلام</option><option value="tv">مسلسلات</option></select>
-      <select id="ex-genre" class="input focusable"><option value="">كل التصنيفات</option></select>
-      <select id="ex-sort" class="input focusable"><option value="pop">الأشهر</option><option value="rate">الأعلى تقييماً</option><option value="new">الأحدث</option></select>
+      <select id="ex-type" class="input focusable"><option value="movie" data-i18n="movies"></option><option value="tv" data-i18n="series"></option></select>
+      <select id="ex-dec" class="input focusable"><option value="all" data-i18n="allYears"></option><option value="2020">2020s</option><option value="2010">2010s</option><option value="2000">2000s</option><option value="1990">1990s</option><option value="1980">1980s</option></select>
+      <select id="ex-genre" class="input focusable"><option value="" data-i18n="allGenres"></option></select>
+      <select id="ex-sort" class="input focusable"><option value="pop" data-i18n="popular"></option><option value="rate" data-i18n="topRated"></option><option value="new" data-i18n="newest"></option></select>
     </div>
     <div class="grid" id="ex-grid"></div>
+    <div id="ex-more" style="height:1px"></div>
+    <div class="empty" id="ex-status"></div>
   </div>
 </div>
 
@@ -309,234 +321,856 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 <div id="settings-screen" class="screen">
   <div class="set">
     <div class="det-top">
-      <h2>الإعدادات</h2>
-      <button class="btn ghost focusable" data-act="backFromSettings">رجوع</button>
+      <h2 data-i18n="settings"></h2>
+      <button class="btn ghost focusable" data-act="backFromSettings" data-i18n="back"></button>
     </div>
     <div class="set-layout">
       <div class="tabs">
-        <button class="tab focusable on" data-act="tab" data-tab="p-look">المظهر</button>
-        <button class="tab focusable" data-act="tab" data-tab="p-play">التشغيل</button>
-        <button class="tab focusable" data-act="tab" data-tab="p-acc">الحسابات</button>
-        <button class="tab focusable" data-act="tab" data-tab="p-data">البيانات</button>
+        <button class="tab focusable on" data-act="tab" data-tab="p-look" data-i18n="tabLook"></button>
+        <button class="tab focusable" data-act="tab" data-tab="p-play" data-i18n="tabPlay"></button>
+        <button class="tab focusable" data-act="tab" data-tab="p-acc" data-i18n="tabAcc"></button>
+        <button class="tab focusable" data-act="tab" data-tab="p-data" data-i18n="tabData"></button>
       </div>
+
       <div class="pane on" id="p-look">
-        <div class="srow"><div><div class="lbl">لون الواجهة</div></div>
-          <div class="ctl"><div class="swatches" id="swatches"></div></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="accent"></div></div>
+          <div class="ctl"><div class="swatches" id="swatches"></div><input type="color" id="accent-custom" class="focusable"></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="bgImage"></div><div class="hint" data-i18n="bgHint"></div></div>
+          <div class="ctl"><input type="text" id="bg-url" class="input focusable" placeholder="https://..."><button class="btn sm focusable" data-act="applyBg" data-i18n="apply"></button><button class="btn ghost sm focusable" data-act="resetBg" data-i18n="reset"></button></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="dim"></div></div>
+          <div class="ctl"><input type="range" id="dim" min="0.3" max="0.97" step="0.01" class="focusable"><span id="dim-val" style="min-width:3ch"></span></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="textSize"></div></div>
+          <div class="ctl"><select id="font" class="input focusable">
+            <option value="14" data-i18n="sizeS"></option><option value="16" data-i18n="sizeM"></option><option value="19" data-i18n="sizeL"></option><option value="22" data-i18n="sizeXL"></option></select></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="cardSize"></div></div>
+          <div class="ctl"><select id="card" class="input focusable">
+            <option value="125" data-i18n="sizeS"></option><option value="150" data-i18n="sizeM"></option><option value="180" data-i18n="sizeL"></option><option value="210" data-i18n="sizeXL"></option></select></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="lite"></div><div class="hint" data-i18n="liteHint"></div></div>
+          <div class="ctl"><button class="switch focusable" id="sw-lite" data-act="toggle" data-key="lite" role="switch"></button></div></div>
       </div>
+
       <div class="pane" id="p-play">
-        <div class="srow"><div><div class="lbl">سيرفر التشغيل الافتراضي</div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="defServer"></div></div>
           <div class="ctl"><select id="server" class="input focusable"></select></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="region"></div></div>
+          <div class="ctl"><select id="region" class="input focusable"><option value="MA">المغرب · Maroc</option><option value="DZ">الجزائر</option><option value="TN">تونس</option><option value="EG">مصر</option><option value="SA">السعودية</option><option value="AE">الإمارات</option><option value="FR">France</option><option value="ES">España</option><option value="DE">Deutschland</option><option value="GB">United Kingdom</option><option value="US">United States</option></select></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="heroSlider"></div><div class="hint" data-i18n="heroHint"></div></div>
+          <div class="ctl"><button class="switch focusable" id="sw-hero" data-act="toggle" data-key="hero" role="switch"></button></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="showHistory"></div></div>
+          <div class="ctl"><button class="switch focusable" id="sw-showHistory" data-act="toggle" data-key="showHistory" role="switch"></button></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="showClock"></div></div>
+          <div class="ctl"><button class="switch focusable" id="sw-showClock" data-act="toggle" data-key="showClock" role="switch"></button></div></div>
       </div>
+
       <div class="pane" id="p-acc">
-        <div><div class="lbl" style="margin-bottom:.8rem">الحسابات</div><div class="plist" id="manage-profiles"></div>
-          <button class="btn ghost focusable" style="margin-top:1rem" data-act="addProfile">إضافة حساب</button></div>
+        <div class="srow"><div><div class="lbl" data-i18n="language"></div></div>
+          <div class="ctl"><select id="lang" class="input focusable">
+            <option value="ar">العربية</option><option value="en">English</option><option value="fr">Français</option><option value="de">Deutsch</option></select></div></div>
+        <div><div class="lbl" style="margin-bottom:.8rem" data-i18n="profiles"></div><div class="plist" id="manage-profiles"></div>
+          <button class="btn ghost focusable" style="margin-top:1rem" data-act="addProfile" data-i18n="addProfile"></button></div>
       </div>
+
       <div class="pane" id="p-data">
-        <div class="srow"><div><div class="lbl">مسح السجل</div></div><div class="ctl"><button class="btn ghost sm focusable" data-act="clearHistory">مسح</button></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="net"></div><div class="hint" data-i18n="netHint"></div></div>
+          <div class="ctl" style="flex-direction:column;align-items:stretch;max-width:26rem">
+            <input type="text" id="net-api" class="input focusable" dir="ltr" placeholder="API: https://my-proxy.workers.dev">
+            <input type="text" id="net-img" class="input focusable" dir="ltr" placeholder="Images: https://my-proxy.workers.dev/img">
+            <div style="display:flex;gap:.6rem;justify-content:flex-end"><button class="btn sm focusable" data-act="saveNet" data-i18n="save"></button><button class="btn ghost sm focusable" data-act="resetNet" data-i18n="reset"></button></div>
+          </div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="clearHistory"></div></div><div class="ctl"><button class="btn ghost sm focusable" data-act="clearHistory" data-i18n="clear"></button></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="clearWatchlist"></div></div><div class="ctl"><button class="btn ghost sm focusable" data-act="clearFavs" data-i18n="clear"></button></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="resetSettings"></div></div><div class="ctl"><button class="btn danger sm focusable" data-act="resetSettings" data-i18n="reset"></button></div></div>
+        <div class="srow"><div><div class="lbl" data-i18n="backup"></div><div class="hint" data-i18n="backupHint"></div></div>
+          <div class="ctl"><button class="btn ghost sm focusable" data-act="exportData" data-i18n="export"></button>
+          <button class="btn ghost sm focusable" data-act="importData" data-i18n="import"></button>
+          <input type="file" id="import-file" accept="application/json" style="display:none"></div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Profile modal -->
 <div id="modal">
   <div class="panel">
-    <h2 id="m-title">حساب جديد</h2>
-    <input type="text" id="m-name" class="input focusable" placeholder="اسم المستخدم" maxlength="20">
-    <input type="text" id="m-avatar" class="input focusable" placeholder="أدخل إيموجي 🦁 أو رابط صورة">
-    <input type="password" id="m-pin" class="input focusable" inputmode="numeric" maxlength="6" placeholder="رمز PIN اختياري">
+    <h2 id="m-title"></h2>
+    <input type="text" id="m-name" class="input focusable" data-i18n-ph="userName" maxlength="20">
+    <div class="two">
+      <select id="m-type" class="input focusable" style="width:40%"><option value="emoji">Emoji</option><option value="url">URL</option></select>
+      <input type="text" id="m-avatar" class="input focusable" style="width:60%">
+    </div>
+    <input type="password" id="m-pin" class="input focusable" inputmode="numeric" maxlength="6" data-i18n-ph="pinOptional">
     <div class="err" id="m-err"></div>
-    <button class="btn focusable" style="justify-content:center" data-act="saveProfile">حفظ</button>
-    <button class="btn ghost focusable" style="justify-content:center" data-act="closeModal">إلغاء</button>
+    <button class="btn focusable" style="justify-content:center" data-act="saveProfile" data-i18n="save"></button>
+    <button class="btn ghost focusable" style="justify-content:center" data-act="closeModal" data-i18n="cancel"></button>
   </div>
 </div>
 
 <!-- Player -->
 <div id="player">
   <div class="p-top">
-    <div class="p-title" id="p-title">جاري التشغيل...</div>
+    <div class="p-title" id="p-title"></div>
     <div class="p-servers" id="p-servers"></div>
-    <button class="btn danger focusable" data-act="closePlayer">إغلاق</button>
+    <div class="p-hint" id="p-hint"></div>
+    <button class="btn danger focusable" data-act="closePlayer" data-i18n="closePlayer"></button>
   </div>
   <iframe id="p-frame" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>
 </div>
 
 <script>
 'use strict';
+/* ============ CONFIG ============ */
 const TMDB_KEY = '960f99e17fd1b712a30cc456631845c2';
-const API = 'https://api.themoviedb.org/3';
-const IMG = 'https://image.tmdb.org/t/p';
-
-// 13 Streaming Servers
+let API = 'https://api.themoviedb.org/3';
+let IMG = 'https://image.tmdb.org/t/p';
+// Optional proxy (Settings > Data > Connection) for networks that block TMDB
+let NET = {};
+try{ NET = JSON.parse(localStorage.getItem('flow2_net')) || {}; }catch(e){ NET = {}; }
+if(NET.api) API = String(NET.api).replace(/\/+$/, '');
+if(NET.img) IMG = String(NET.img).replace(/\/+$/, '');
+const CACHE_TTL = 6 * 3600 * 1000;
+// Player servers: edit this list to change / add sources.
 const SERVERS = [
-  { id: 'vidsrc',     name: 'VidSrc',       movie: id => `https://vidsrc.to/embed/movie/${id}`,        tv: (id,s,e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}` },
-  { id: 'autoembed',  name: 'AutoEmbed',    movie: id => `https://player.autoembed.cc/embed/movie/${id}`, tv: (id,s,e) => `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}` },
-  { id: 'multiembed', name: 'MultiEmbed',   movie: id => `https://multiembed.mov/?video_id=${id}&tmdb=1`, tv: (id,s,e) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}` },
-  { id: 'embedsu',    name: 'Embed.su',     movie: id => `https://embed.su/embed/movie/${id}`,         tv: (id,s,e) => `https://embed.su/embed/tv/${id}/${s}/${e}` },
-  { id: 'vidsrcme',   name: 'VidSrc.me',    movie: id => `https://vidsrc.me/embed/movie?tmdb=${id}`,   tv: (id,s,e) => `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
-  { id: 'vidsrccc',   name: 'VidSrc.cc',    movie: id => `https://vidsrccc.xyz/embed/movie/${id}`,     tv: (id,s,e) => `https://vidsrccc.xyz/embed/tv/${id}/${s}/${e}` },
-  { id: 'superembed', name: 'SuperEmbed',   movie: id => `https://multiembed.mov/?tmdb=1&video_id=${id}`, tv: (id,s,e) => `https://multiembed.mov/?tmdb=1&video_id=${id}&s=${s}&e=${e}` },
-  { id: 'vidlink',    name: 'VidLink',      movie: id => `https://vidlink.pro/movie/${id}`,          tv: (id,s,e) => `https://vidlink.pro/tv/${id}/${s}/${e}` },
-  { id: 'moviesapi',  name: 'MoviesAPI',    movie: id => `https://moviesapi.club/movie/${id}`,       tv: (id,s,e) => `https://moviesapi.club/tv/${id}-${s}-${e}` },
-  { id: 'smashy',     name: 'SmashyStream', movie: id => `https://player.smashy.stream/movie/${id}`, tv: (id,s,e) => `https://player.smashy.stream/tv/${id}?s=${s}&e=${e}` },
-  { id: 'vidsrcxyz',  name: 'VidSrc.xyz',   movie: id => `https://vidsrc.xyz/embed/movie?tmdb=${id}`, tv: (id,s,e) => `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
-  { id: '2embed',     name: '2Embed',       movie: id => `https://www.2embed.cc/embed/${id}`,        tv: (id,s,e) => `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}` },
-  { id: 'vidsrcvip',  name: 'VidSrc VIP',   movie: id => `https://vidsrc.vip/embed/movie/${id}`,     tv: (id,s,e) => `https://vidsrc.vip/embed/tv/${id}/${s}/${e}` }
+  { id: 'vidsrc',    name: 'VidSrc',    movie: id => `https://vidsrc.to/embed/movie/${id}`,        tv: (id,s,e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}` },
+  { id: 'autoembed', name: 'AutoEmbed', movie: id => `https://player.autoembed.cc/embed/movie/${id}`, tv: (id,s,e) => `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}` }
 ];
-
 const ACCENTS = ['#e5484d','#f97316','#eab308','#22c55e','#14b8a6','#38bdf8','#6366f1','#a855f7','#ec4899','#ffffff'];
-let profiles = load('flow_profiles', null) || [];
-let me = null, currentItem = null, activeServer = SERVERS[0].id;
+const DEFAULTS = { accent:'#e5484d', bg:'', dim:0.85, font:16, card:150, lite:false, hero:true, showHistory:true, showClock:true, server:'vidsrc', region:'MA' };
+const PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450"><rect width="100%" height="100%" fill="#1e1e28"/><text x="50%" y="50%" fill="#555" font-size="22" text-anchor="middle" font-family="sans-serif">No poster</text></svg>');
 
-function load(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
-function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
+/* ============ I18N ============ */
+const I18N = {
+ ar:{whowatch:'من يشاهد الآن؟',addProfile:'إضافة حساب',settings:'الإعدادات',enterPin:'أدخل رمز الحماية (PIN)',login:'دخول',switchProfile:'تبديل الحساب',wrongPin:'رمز الحماية غير صحيح',search:'ابحث عن فيلم أو مسلسل...',watchNow:'شاهد الآن',continueWatching:'متابعة المشاهدة',watchlist:'قائمتي',backHome:'العودة للرئيسية',back:'رجوع',season:'الموسم',episode:'الحلقة',ratings:'التقييمات والتعليقات',writeComment:'اكتب تعليقك...',send:'إرسال',noComments:'لا توجد تعليقات بعد. كن أول من يعلق!',siteRating:'تقييم الموقع',noRating:'لا يوجد تقييم بعد',delete:'حذف',year:'السنة',searchResults:'نتائج البحث',noResults:'لا توجد نتائج',closePlayer:'إغلاق',statusWant:'أريد مشاهدته',statusWatching:'أشاهده الآن',statusWatched:'شاهدته',addList:'أضف للقائمة',inList:'في القائمة',continueEp:'متابعة',
+  c_trending:'الأفلام الرائجة',c_top:'الأعلى تقييماً',c_retro:'كلاسيكيات القرن الماضي',c_action:'أكشن ومغامرات',c_scifi:'خيال علمي وفانتازيا',c_drama:'دراما وغموض',c_tv:'مسلسلات رائجة',c_anime:'أنمي ورسوم متحركة',
+  tabLook:'المظهر',tabPlay:'التشغيل والعرض',tabAcc:'الحسابات واللغة',tabData:'البيانات',accent:'لون الواجهة',bgImage:'صورة الخلفية',bgHint:'رابط صورة اختياري',apply:'تطبيق',reset:'إعادة ضبط',dim:'تعتيم الخلفية',textSize:'حجم النصوص',cardSize:'حجم الملصقات',sizeS:'صغير',sizeM:'عادي',sizeL:'كبير',sizeXL:'كبير جداً',lite:'وضع الأداء الخفيف',liteHint:'يوقف الحركات والانتقالات (مفيد للأجهزة الضعيفة)',defServer:'سيرفر التشغيل الافتراضي',heroSlider:'تغيير البانر تلقائياً',heroHint:'يبدّل الفيلم المميز كل بضع ثوانٍ',showHistory:'إظهار «متابعة المشاهدة»',showClock:'إظهار الساعة',language:'لغة الواجهة',profiles:'الحسابات',clearHistory:'مسح سجل المشاهدة',clearWatchlist:'مسح القائمة',clear:'مسح',resetSettings:'إعادة ضبط كل الإعدادات',backup:'نسخة احتياطية',backupHint:'تصدير/استيراد الحسابات والقوائم والتعليقات',export:'تصدير',import:'استيراد',
+  newProfile:'حساب جديد',editProfile:'تعديل الحساب',userName:'اسم المستخدم',pinOptional:'رمز PIN (اختياري)',save:'حفظ',cancel:'إلغاء',edit:'تعديل',changePin:'تغيير PIN',main:'رئيسي',noPass:'بدون رمز',nameReq:'الرجاء إدخال الاسم',confirmDel:'حذف هذا الحساب؟',confirmClear:'هل أنت متأكد؟',curPin:'أدخل رمز PIN الحالي (اتركه فارغاً إن لم يوجد):',newPin:'أدخل رمز PIN الجديد (فارغ = بدون رمز):',emojiPh:'اكتب إيموجي 🦁',urlPh:'رابط الصورة https://...',loadFail:'تعذّر التحميل. تحقق من الاتصال.',netTip:'إذا كان مزوّد الإنترنت يحجب TMDB جرّب VPN أو غيّر DNS (1.1.1.1) أو ضع بروكسي في الإعدادات ← البيانات.',net:'الاتصال (بروكسي TMDB)',netHint:'اختياري: عنوان بروكسي إذا كان TMDB محجوباً عندك',c_d20:'أفلام 2020 وما بعد',c_d10:'أفلام 2010–2019',c_d00:'أفلام 2000–2009',c_d90:'أفلام التسعينات',c_d80:'أفلام الثمانينات',c_tvnew:'مسلسلات حديثة (2015+)',c_tvold:'مسلسلات كلاسيكية (1980–2009)',explore:'استكشاف',movies:'أفلام',series:'مسلسلات',allYears:'كل السنوات (منذ 1980)',allGenres:'كل التصنيفات',popular:'الأشهر',topRated:'الأعلى تقييماً',newest:'الأحدث',trailer:'الإعلان',noTrailer:'لا يوجد إعلان لهذا العنوان',whereToWatch:'متوفر على',noProviders:'غير متوفر على منصات رسمية في منطقتك (حسب JustWatch)',region:'المنطقة (للمنصات الرسمية)',playHint:'إذا ظهرت «Media not found» فالعنوان غير متوفر في هذا السيرفر. جرّب سيرفراً آخر، أو شاهد الإعلان/المنصات الرسمية من صفحة التفاصيل.',retry:'إعادة المحاولة',done:'تم'},
+ en:{whowatch:"Who's watching?",addProfile:'Add profile',settings:'Settings',enterPin:'Enter your PIN',login:'Enter',switchProfile:'Switch profile',wrongPin:'Wrong PIN',search:'Search movies or shows...',watchNow:'Watch now',continueWatching:'Continue watching',watchlist:'My list',backHome:'Back to home',back:'Back',season:'Season',episode:'Episode',ratings:'Ratings & comments',writeComment:'Write a comment...',send:'Send',noComments:'No comments yet. Be the first!',siteRating:'Site rating',noRating:'No ratings yet',delete:'Delete',year:'Year',searchResults:'Search results',noResults:'No results',closePlayer:'Close',statusWant:'Want to watch',statusWatching:'Watching',statusWatched:'Watched',addList:'Add to list',inList:'In my list',continueEp:'Continue',
+  c_trending:'Trending movies',c_top:'Top rated',c_retro:'Retro classics',c_action:'Action & adventure',c_scifi:'Sci-fi & fantasy',c_drama:'Drama & mystery',c_tv:'Popular TV shows',c_anime:'Anime & animation',
+  tabLook:'Appearance',tabPlay:'Playback & display',tabAcc:'Accounts & language',tabData:'Data',accent:'Accent color',bgImage:'Background image',bgHint:'Optional image URL',apply:'Apply',reset:'Reset',dim:'Background dimming',textSize:'Text size',cardSize:'Poster size',sizeS:'Small',sizeM:'Normal',sizeL:'Large',sizeXL:'Extra large',lite:'Lite performance mode',liteHint:'Disables animations (helps weak devices)',defServer:'Default player server',heroSlider:'Auto-rotate banner',heroHint:'Switches the featured title every few seconds',showHistory:'Show “Continue watching”',showClock:'Show clock',language:'Interface language',profiles:'Profiles',clearHistory:'Clear watch history',clearWatchlist:'Clear my list',clear:'Clear',resetSettings:'Reset all settings',backup:'Backup',backupHint:'Export / import profiles, lists and comments',export:'Export',import:'Import',
+  newProfile:'New profile',editProfile:'Edit profile',userName:'Username',pinOptional:'PIN (optional)',save:'Save',cancel:'Cancel',edit:'Edit',changePin:'Change PIN',main:'Main',noPass:'No PIN',nameReq:'Please enter a name',confirmDel:'Delete this profile?',confirmClear:'Are you sure?',curPin:'Enter current PIN (empty if none):',newPin:'Enter new PIN (empty = no PIN):',emojiPh:'Type an emoji 🦁',urlPh:'Image URL https://...',loadFail:'Failed to load. Check your connection.',netTip:'If your ISP blocks TMDB, try a VPN, change DNS (1.1.1.1), or set a proxy in Settings > Data.',net:'Connection (TMDB proxy)',netHint:'Optional: proxy address if TMDB is blocked on your network',c_d20:'2020s movies',c_d10:'2010s movies',c_d00:'2000s movies',c_d90:'90s movies',c_d80:'80s movies',c_tvnew:'Recent shows (2015+)',c_tvold:'Classic shows (1980–2009)',explore:'Explore',movies:'Movies',series:'TV shows',allYears:'All years (since 1980)',allGenres:'All genres',popular:'Most popular',topRated:'Top rated',newest:'Newest',trailer:'Trailer',noTrailer:'No trailer found for this title',whereToWatch:'Available on',noProviders:'Not on official platforms in your region (per JustWatch)',region:'Region (official platforms)',playHint:'If you see “Media not found”, this title is not available on this server. Try another server, or use the trailer / official platforms on the details page.',retry:'Retry',done:'Done'},
+ fr:{whowatch:'Qui regarde ?',addProfile:'Ajouter un profil',settings:'Paramètres',enterPin:'Entrez votre code PIN',login:'Entrer',switchProfile:'Changer de profil',wrongPin:'PIN incorrect',search:'Rechercher un film ou une série...',watchNow:'Regarder',continueWatching:'Continuer',watchlist:'Ma liste',backHome:"Retour à l'accueil",back:'Retour',season:'Saison',episode:'Épisode',ratings:'Avis et commentaires',writeComment:'Écrire un commentaire...',send:'Envoyer',settingsX:'',c_trending:'Films tendance',c_top:'Les mieux notés',c_retro:'Classiques',c_action:'Action',c_scifi:'Science-fiction',c_drama:'Drame et mystère',c_tv:'Séries populaires',c_anime:'Animation',tabLook:'Apparence',tabPlay:'Lecture et affichage',tabAcc:'Comptes et langue',tabData:'Données',accent:"Couleur d'accent",apply:'Appliquer',reset:'Réinitialiser',language:'Langue',profiles:'Profils',save:'Enregistrer',cancel:'Annuler',closePlayer:'Fermer',sizeS:'Petit',sizeM:'Normal',sizeL:'Grand',sizeXL:'Très grand',watchlistX:''},
+ de:{whowatch:'Wer schaut zu?',addProfile:'Profil hinzufügen',settings:'Einstellungen',enterPin:'PIN eingeben',login:'Weiter',switchProfile:'Profil wechseln',wrongPin:'Falsche PIN',search:'Filme oder Serien suchen...',watchNow:'Jetzt ansehen',continueWatching:'Weiterschauen',watchlist:'Meine Liste',backHome:'Zur Startseite',back:'Zurück',season:'Staffel',episode:'Folge',ratings:'Bewertungen & Kommentare',writeComment:'Kommentar schreiben...',send:'Senden',c_trending:'Trend-Filme',c_top:'Bestbewertet',c_retro:'Klassiker',c_action:'Action',c_scifi:'Sci-Fi & Fantasy',c_drama:'Drama & Mystery',c_tv:'Beliebte Serien',c_anime:'Anime & Animation',tabLook:'Aussehen',tabPlay:'Wiedergabe & Anzeige',tabAcc:'Konten & Sprache',tabData:'Daten',accent:'Akzentfarbe',apply:'Anwenden',reset:'Zurücksetzen',language:'Sprache',profiles:'Profile',save:'Speichern',cancel:'Abbrechen',closePlayer:'Schließen',sizeS:'Klein',sizeM:'Normal',sizeL:'Groß',sizeXL:'Sehr groß'}
+};
+let lang = load('flow2_lang', 'ar');
+const t = k => {
+  const a = I18N[lang] && I18N[lang][k];
+  if(a !== undefined && a !== null) return a;
+  if(I18N.en[k] !== undefined) return I18N.en[k];
+  if(I18N.ar[k] !== undefined) return I18N.ar[k];
+  return k;
+};
 
-document.getElementById('server').innerHTML = SERVERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-
-function renderProfiles() {
-  const list = document.getElementById('profiles-list');
-  if(!profiles.length) {
-    list.innerHTML = `<div style="text-align:center;color:var(--muted)">لا توجد حسابات. أنشئ حساباً للبدء.</div>`;
-    return;
-  }
-  list.innerHTML = profiles.map((p, i) => `
-    <div class="profile focusable" tabindex="0" onclick="selectProfile(${i})">
-      <div class="avatar">${p.avatar.startsWith('http') ? `<img src="${p.avatar}">` : p.avatar}</div>
-      <div style="font-weight:700">${p.name}</div>
-    </div>
-  `).join('');
+/* ============ HELPERS ============ */
+const $ = id => document.getElementById(id);
+function load(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch{ return d; } }
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} }
+function del(k){ try{ localStorage.removeItem(k); }catch{} }
+const esc = s => String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function onAccent(hex){
+  let h = hex.replace('#',''); if(h.length === 3) h = h.split('').map(c => c+c).join('');
+  const n = parseInt(h, 16), r = n>>16&255, g = n>>8&255, b = n&255;
+  return (0.299*r + 0.587*g + 0.114*b) > 150 ? '#0b0b10' : '#ffffff';
 }
+const apiLang = () => lang === 'ar' ? 'ar-SA' : lang;
+const posterUrl = it => it.poster ? (/^http/.test(it.poster) ? it.poster : `${IMG}/w342${it.poster}`) : PLACEHOLDER;
+const ICON_HEART = '<svg class="icon" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
+const ICON_PLAY = '<svg class="icon" viewBox="0 0 24 24" style="fill:currentColor"><path d="M7 4v16l13-8z"/></svg>';
+const ICON_CHEV = d => `<svg class="icon" viewBox="0 0 24 24"><path d="${d}"/></svg>`;
 
-function selectProfile(i) {
-  me = profiles[i];
-  if(me.pin) {
-    document.getElementById('pin-avatar').innerHTML = me.avatar.startsWith('http') ? `<img src="${me.avatar}">` : me.avatar;
-    document.getElementById('pin-name').textContent = me.name;
-    showScreen('pin-screen');
-  } else {
-    enterMain();
-  }
+let lastErr = '';
+function fetchT(url, ms){
+  return new Promise((res, rej) => {
+    const tm = setTimeout(() => rej(new Error('timeout')), ms);
+    fetch(url).then(r => { clearTimeout(tm); res(r); }, e => { clearTimeout(tm); rej(e); });
+  });
 }
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+async function tmdb(path, params, bare){
+  const q = ['api_key=' + TMDB_KEY, 'language=' + (bare ? 'en-US' : apiLang())];
+  if(!bare){ q.push('include_adult=false'); for(const k in (params || {})) q.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k])); }
+  const r = await fetchT(API + path + '?' + q.join('&'), 15000);
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
 }
-
-function enterMain() {
-  document.getElementById('nav-name').textContent = me.name;
-  document.getElementById('nav-avatar').innerHTML = me.avatar.startsWith('http') ? `<img src="${me.avatar}">` : me.avatar;
-  showScreen('main-screen');
-  loadHomeData();
-}
-
-async function loadHomeData() {
-  const res = await fetch(`${API}/trending/all/day?api_key=${TMDB_KEY}&language=ar`);
-  const data = await res.json();
-  if(data.results && data.results.length) {
-    const item = data.results[0];
-    document.getElementById('hero-img').src = `${IMG}/original${item.backdrop_path}`;
-    document.getElementById('hero-title').textContent = item.title || item.name;
-    document.getElementById('hero-desc').textContent = item.overview;
-    document.getElementById('hero-meta').textContent = `${item.media_type === 'movie' ? 'فيلم' : 'مسلسل'} • ★ ${item.vote_average.toFixed(1)}`;
-    currentItem = item;
-    
-    let rowsHtml = '';
-    const categories = [
-      { title: 'الأفلام الرائجة', url: `${API}/trending/movie/day?api_key=${TMDB_KEY}&language=ar` },
-      { title: 'الأعلى تقييماً', url: `${API}/movie/top_rated?api_key=${TMDB_KEY}&language=ar` }
-    ];
-    
-    for(let cat of categories) {
-      const r = await fetch(cat.url);
-      const d = await r.json();
-      if(d.results) {
-        rowsHtml += `
-          <div class="row">
-            <div class="row-title">${cat.title}</div>
-            <div class="track">
-              ${d.results.map(m => `
-                <div class="card focusable" tabindex="0" onclick='openDetails(${JSON.stringify(m).replace(/'/g, "&#39;")})'>
-                  <div class="poster"><img src="${IMG}/w300${m.poster_path}" loading="lazy"></div>
-                  <div class="c-title">${m.title || m.name}</div>
-                  <div class="c-meta"><span class="star">★ ${m.vote_average.toFixed(1)}</span><span>${(m.release_date || m.first_air_date || '').slice(0,4)}</span></div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }
-    }
-    document.getElementById('rows').innerHTML = rowsHtml;
+// tries full request; on failure retries with minimal params so a row never stays empty for a fancy filter
+async function tmdbSafe(path, params){
+  try{ return await tmdb(path, params, false); }
+  catch(e){
+    lastErr = String((e && e.message) || e);
+    try{ return await tmdb(path, {}, true); }
+    catch(e2){ lastErr = String((e2 && e2.message) || e2); throw e2; }
   }
 }
 
-function openDetails(item) {
-  currentItem = item;
-  document.getElementById('det-card').innerHTML = `
-    <img src="${IMG}/original${item.backdrop_path}" class="det-bd">
-    <div class="det-in">
-      <img src="${IMG}/w500${item.poster_path}" class="det-poster">
-      <div class="det-info">
-        <h2>${item.title || item.name}</h2>
-        <p>${item.overview}</p>
-        <button class="btn focusable" onclick="playCurrent()">شاهد الآن</button>
+/* ============ STATE ============ */
+let profiles = load('flow_profiles', null);
+if(!Array.isArray(profiles) || !profiles.length) profiles = [{ id:1, name:'عمران', avatar:'🦁', isUrl:false, pin:'', permanent:true }];
+profiles.forEach((p, i) => {
+  if(p.id === undefined || p.id === null) p.id = Date.now() + i;
+  p.name = p.name || 'User'; p.avatar = p.avatar || '👤';
+  if(p.isUrl === undefined) p.isUrl = /^https?:/i.test(p.avatar);
+  p.pin = p.pin ? String(p.pin) : '';
+  if(i === 0 && p.permanent === undefined) p.permanent = true;
+});
+save('flow_profiles', profiles);
+let me = null, pendingUser = null, settings = { ...DEFAULTS };
+let catalog = [], catalogReady = false, catalogFailed = false, catalogLoading = false;
+const itemMap = {};           // key -> item
+let current = null;           // item shown in details
+let heroItems = [], heroIdx = 0, heroTimer = null, searchMode = false, editingId = null;
+const seasonCache = {};
+let backTo = 'main-screen', lastCardKey = '', rowsDirty = false;
+
+const sid = () => me ? me.id : 'global';
+const K = n => `flow2_${n}_${sid()}`;
+const reg = it => (itemMap[it.key] = it);
+const getFavs = () => me ? load(K('favs'), []) : [];
+const getHist = () => me ? load(K('hist'), []) : [];
+const isFav = key => getFavs().some(f => f.key === key);
+
+/* ============ SETTINGS ============ */
+function loadSettings(){ settings = { ...DEFAULTS, ...load(K('set'), {}) }; applySettings(); }
+function saveSettings(){ save(K('set'), settings); }
+function applySettings(){
+  const s = settings, root = document.documentElement;
+  root.style.setProperty('--accent', s.accent);
+  root.style.setProperty('--on-accent', onAccent(s.accent));
+  root.style.setProperty('--dimv', s.dim);
+  root.style.setProperty('--base-font', s.font + 'px');
+  root.style.setProperty('--card-w', s.card + 'px');
+  root.classList.toggle('lite', !!s.lite);
+  $('bg').style.backgroundImage = s.bg ? `url("${s.bg.replace(/"/g, '%22')}")` : 'none';
+  $('clock').style.display = s.showClock ? '' : 'none';
+  setupHeroTimer();
+}
+function syncSettingsUI(){
+  $('swatches').innerHTML = ACCENTS.map(c => `<button class="sw focusable${c.toLowerCase()===settings.accent.toLowerCase()?' on':''}" style="background:${c}" data-act="accent" data-c="${c}" aria-label="${c}"></button>`).join('');
+  $('accent-custom').value = /^#[0-9a-f]{6}$/i.test(settings.accent) ? settings.accent : '#e5484d';
+  $('bg-url').value = settings.bg || '';
+  $('dim').value = settings.dim; $('dim-val').textContent = Math.round(settings.dim*100) + '%';
+  $('font').value = String(settings.font); $('card').value = String(settings.card);
+  ['lite','hero','showHistory','showClock'].forEach(k => { const el = $('sw-' + k); el.classList.toggle('on', !!settings[k]); el.setAttribute('aria-checked', !!settings[k]); });
+  $('server').innerHTML = SERVERS.map(s => `<option value="${s.id}"${s.id===settings.server?' selected':''}>${s.name}</option>`).join('');
+  $('lang').value = lang;
+  $('region').value = settings.region || 'MA';
+  $('net-api').value = NET.api || ''; $('net-img').value = NET.img || '';
+  renderManageProfiles();
+}
+function renderManageProfiles(){
+  $('manage-profiles').innerHTML = profiles.map(p => `
+    <div class="pitem">
+      <div class="who"><span class="avatar">${avatarHTML(p)}</span><span>${esc(p.name)} ${!p.pin?`<small style="color:var(--muted)">(${t('noPass')})</small>`:''}</span></div>
+      <div class="acts">
+        <button class="btn ghost sm focusable" data-act="editProfile" data-id="${p.id}">${t('edit')}</button>
+        <button class="btn ghost sm focusable" data-act="changePin" data-id="${p.id}">${t('changePin')}</button>
+        ${p.permanent ? `<small style="color:var(--muted);align-self:center">${t('main')}</small>` : `<button class="btn danger sm focusable" data-act="delProfile" data-id="${p.id}">${t('delete')}</button>`}
       </div>
-    </div>
-  `;
-  showScreen('details-screen');
+    </div>`).join('');
 }
 
-function playCurrent(s=1, e=1) {
-  if(!currentItem) return;
-  const isTv = currentItem.media_type === 'tv' || currentItem.first_air_date;
-  const srv = SERVERS.find(x => x.id === activeServer) || SERVERS[0];
-  const url = isTv ? srv.tv(currentItem.id, s, e) : srv.movie(currentItem.id);
-  
-  document.getElementById('p-title').textContent = currentItem.title || currentItem.name;
-  document.getElementById('p-servers').innerHTML = SERVERS.map(srv => `
-    <button class="btn sm ${srv.id === activeServer ? '' : 'ghost'}" onclick="switchServer('${srv.id}', ${s}, ${e})">${srv.name}</button>
-  `).join('');
-  document.getElementById('p-frame').src = url;
-  document.getElementById('player').classList.add('active');
+/* ============ I18N APPLY ============ */
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
+  const d = document.documentElement; d.lang = lang; d.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  toggleAvatarPh();
 }
 
-function switchServer(id, s, e) {
-  activeServer = id;
-  playCurrent(s, e);
+/* ============ SCREENS ============ */
+function showScreen(id, keep){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = $(id); el.classList.add('active'); if(!keep) el.scrollTop = 0;
+  setTimeout(() => { const f = el.querySelector('[data-af]') || el.querySelector('.focusable'); if(f) f.focus({ preventScroll:true }); }, 30);
 }
+const activeScreen = () => (document.querySelector('.screen.active') || {}).id;
+
+function avatarHTML(p){ return p.isUrl ? `<img src="${esc(p.avatar)}" alt="">` : esc(p.avatar); }
+
+function showProfiles(){
+  me = null; stopHero(); loadSettings();
+  $('profiles-list').innerHTML = profiles.map(p => `
+    <button class="profile focusable" data-act="pickProfile" data-id="${p.id}">
+      <span class="avatar">${avatarHTML(p)}</span><span style="font-weight:700">${esc(p.name)}</span>
+    </button>`).join('');
+  showScreen('profiles-screen');
+}
+function pickProfile(id){
+  pendingUser = profiles.find(p => p.id === id); if(!pendingUser) return;
+  if(!pendingUser.pin){ login(pendingUser); return; }
+  $('pin-name').textContent = pendingUser.name;
+  $('pin-avatar').innerHTML = avatarHTML(pendingUser);
+  $('pin-input').value = ''; $('pin-err').textContent = '';
+  showScreen('pin-screen');
+}
+function verifyPin(){
+  if($('pin-input').value === pendingUser.pin) login(pendingUser);
+  else { $('pin-err').textContent = t('wrongPin'); $('pin-input').value = ''; }
+}
+function login(u){
+  me = u; loadSettings();
+  $('nav-name').textContent = u.name; $('nav-avatar').innerHTML = avatarHTML(u);
+  searchMode = false; $('search-input').value = '';
+  renderMain(); showScreen('main-screen');
+  if(!catalogReady && !catalogFailed) ensureCatalog();
+}
+
+/* ============ PROFILES CRUD ============ */
+function toggleAvatarPh(){ $('m-avatar').placeholder = $('m-type').value === 'url' ? t('urlPh') : t('emojiPh'); }
+function openModal(id){
+  editingId = id || null;
+  const p = id ? profiles.find(x => x.id === id) : null;
+  $('m-title').textContent = t(p ? 'editProfile' : 'newProfile');
+  $('m-name').value = p ? p.name : '';
+  $('m-type').value = p && p.isUrl ? 'url' : 'emoji';
+  $('m-avatar').value = p ? p.avatar : '';
+  $('m-pin').value = ''; $('m-pin').style.display = p ? 'none' : '';
+  $('m-err').textContent = ''; toggleAvatarPh();
+  $('modal').classList.add('active'); setTimeout(() => $('m-name').focus(), 30);
+}
+function closeModal(){ $('modal').classList.remove('active'); }
+function saveProfile(){
+  const name = $('m-name').value.trim(), isUrl = $('m-type').value === 'url', av = $('m-avatar').value.trim();
+  if(!name){ $('m-err').textContent = t('nameReq'); return; }
+  const avatar = av || (isUrl ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=60' : '👤');
+  if(editingId){ const p = profiles.find(x => x.id === editingId); Object.assign(p, { name, avatar, isUrl }); }
+  else profiles.push({ id: Date.now(), name, avatar, isUrl, pin: $('m-pin').value.trim(), permanent:false });
+  save('flow_profiles', profiles); closeModal();
+  if(activeScreen() === 'settings-screen') syncSettingsUI(); else showProfiles();
+}
+function changePin(id){
+  const p = profiles.find(x => x.id === id); if(!p) return;
+  const cur = prompt(t('curPin')); if(cur === null) return;
+  if(cur !== (p.pin || '')){ alert(t('wrongPin')); return; }
+  const np = prompt(t('newPin')); if(np === null) return;
+  p.pin = np.trim(); save('flow_profiles', profiles); renderManageProfiles(); alert(t('done'));
+}
+function delProfile(id){
+  if(!confirm(t('confirmDel'))) return;
+  profiles = profiles.filter(p => p.id !== id); save('flow_profiles', profiles);
+  ['favs','hist','set'].forEach(n => del(`flow2_${n}_${id}`));
+  renderManageProfiles();
+}
+
+/* ============ CATALOG ============ */
+const DEC = (a, b) => ({ 'primary_release_date.gte': a + '-01-01', 'primary_release_date.lte': b + '-12-31', sort_by:'popularity.desc', 'vote_count.gte':200 });
+const ROWS = [
+  { k:'c_trending', type:'movie',  path:'/trending/movie/week', p:{} },
+  { k:'c_top',      type:'movie',  path:'/discover/movie', p:{ sort_by:'vote_average.desc', 'vote_count.gte':5000 } },
+  { k:'c_d20',      type:'movie',  path:'/discover/movie', p:DEC(2020, new Date().getFullYear()) },
+  { k:'c_d10',      type:'movie',  path:'/discover/movie', p:DEC(2010, 2019) },
+  { k:'c_d00',      type:'movie',  path:'/discover/movie', p:DEC(2000, 2009) },
+  { k:'c_d90',      type:'movie',  path:'/discover/movie', p:DEC(1990, 1999) },
+  { k:'c_d80',      type:'movie',  path:'/discover/movie', p:DEC(1980, 1989) },
+  { k:'c_action',   type:'movie',  path:'/discover/movie', p:{ with_genres:'28', sort_by:'popularity.desc', 'primary_release_date.gte':'1980-01-01' } },
+  { k:'c_scifi',    type:'movie',  path:'/discover/movie', p:{ with_genres:'878', sort_by:'popularity.desc', 'primary_release_date.gte':'1980-01-01' } },
+  { k:'c_drama',    type:'movie',  path:'/discover/movie', p:{ with_genres:'18|9648', sort_by:'popularity.desc', 'primary_release_date.gte':'1980-01-01' } },
+  { k:'c_tv',       type:'series', path:'/tv/popular', p:{} },
+  { k:'c_tvnew',    type:'series', path:'/discover/tv', p:{ 'first_air_date.gte':'2015-01-01', sort_by:'popularity.desc', 'vote_count.gte':100 } },
+  { k:'c_tvold',    type:'series', path:'/discover/tv', p:{ 'first_air_date.gte':'1980-01-01', 'first_air_date.lte':'2009-12-31', sort_by:'popularity.desc', 'vote_count.gte':100 } },
+  { k:'c_anime',    type:'series', path:'/discover/tv', p:{ with_genres:'16', with_original_language:'ja', sort_by:'popularity.desc' } }
+];
+function mapItem(r, type){
+  const it = {
+    key: `${type}_${r.id}`, id: r.id, type,
+    title: r.title || r.name || '', year: (r.release_date || r.first_air_date || '').slice(0,4) || '—',
+    rating: r.vote_average ? r.vote_average.toFixed(1) : '—',
+    poster: r.poster_path || '', backdrop: r.backdrop_path || '', desc: r.overview || ''
+  };
+  return it;
+}
+function ensureCatalog(){
+  catalogFailed = false;
+  const ck = `flow2_cat_v2_${lang}`, cached = load(ck, null);
+  if(cached && Date.now() - cached.t < CACHE_TTL && cached.rows && cached.rows.length){
+    catalog = cached.rows; catalog.forEach(r => r.items.forEach(reg)); catalogReady = true; onCatalog(); return;
+  }
+  if(catalogLoading) return;
+  for(const k in rowState) delete rowState[k];
+  catalogLoading = true; catalogReady = false; lastErr = ''; renderRows();
+  const out = new Array(ROWS.length); let pending = ROWS.length;
+  const finish = () => {
+    catalogLoading = false;
+    const rows = out.filter(Boolean);
+    if(!rows.length){ catalogFailed = true; renderRows(); return; }
+    catalog = rows; catalog.forEach(r => r.items.forEach(reg)); catalogReady = true;
+    save(ck, { t: Date.now(), rows }); onCatalog();
+  };
+  ROWS.forEach((row, i) => {
+    tmdbSafe(row.path, row.p).then(d => {
+      const items = (d.results || []).map(r => mapItem(r, row.type)).filter(it => it.poster).slice(0, 20);
+      if(items.length) out[i] = { k: row.k, items };
+    }).catch(() => {}).then(() => { if(--pending === 0) finish(); });
+  });
+}
+function onCatalog(){
+  heroItems = (catalog[0] ? catalog[0].items : []).filter(i => i.backdrop).slice(0, 6);
+  heroIdx = 0; if(me){ renderMain(); }
+}
+
+/* ============ MAIN RENDER ============ */
+function cardHTML(it){
+  reg(it);
+  return `<div class="card focusable" tabindex="0" role="button" data-key="${it.key}" aria-label="${esc(it.title)}">
+    <div class="poster"><img src="${posterUrl(it)}" alt="" width="342" height="513" loading="lazy" decoding="async">
+      <button class="fav${isFav(it.key)?' on':''}" tabindex="-1" data-fav="${it.key}" aria-label="list">${ICON_HEART}</button></div>
+    <div class="c-title">${esc(it.title)}</div>
+    <div class="c-meta"><span>${esc(it.year)}</span><span class="star">★ ${esc(it.rating)}</span></div></div>`;
+}
+function rowHTML(title, items, k){
+  const rtl = document.documentElement.dir === 'rtl';
+  return `<section class="row"${k ? ' data-row="' + k + '"' : ''}><div class="row-head"><div class="row-title">${title}</div>
+    <div class="row-nav"><button tabindex="-1" data-scroll="-1" aria-label="prev">${ICON_CHEV(rtl?'m9 6 6 6-6 6':'m15 6-6 6 6 6')}</button><button tabindex="-1" data-scroll="1" aria-label="next">${ICON_CHEV(rtl?'m15 6-6 6 6 6':'m9 6 6 6-6 6')}</button></div></div>
+    <div class="track">${items.map(cardHTML).join('')}${k ? '<div class="more" data-more="' + k + '"></div>' : ''}</div></section>`;
+}
+function renderRows(){
+  if(!me || searchMode) return;
+  const box = $('rows'); let html = '';
+  const favs = getFavs(), hist = settings.showHistory ? getHist() : [];
+  if(hist.length) html += rowHTML(t('continueWatching'), hist);
+  if(favs.length) html += rowHTML(t('watchlist'), favs);
+  if(catalogReady) html += catalog.map(r => rowHTML(t(r.k), r.items, r.k)).join('');
+  else if(catalogFailed) html += `<div class="empty">${t('loadFail')}<br><small dir="ltr" style="display:block;margin-top:.5rem;opacity:.7">${esc(lastErr || 'unknown error')} · ${esc(API)}</small><div style="max-width:34rem;margin:.8rem auto 0;font-size:.85rem">${t('netTip')}</div><br><button class="btn focusable" data-act="retry">${t('retry')}</button></div>`;
+  else html += `<section class="row"><div class="track">${'<div class="sk"></div>'.repeat(10)}</div></section>`.repeat(2);
+  box.innerHTML = html;
+  observeMore();
+}
+function renderMain(){
+  $('hero').style.display = (!searchMode && heroItems.length) ? '' : 'none';
+  if(heroItems.length){
+    $('hero-dots').innerHTML = heroItems.map((_, i) => `<button class="dot focusable${i===heroIdx?' on':''}" data-act="heroTo" data-i="${i}" aria-label="${i+1}"></button>`).join('');
+    setHero(heroIdx, true);
+  }
+  renderRows(); setupHeroTimer();
+}
+function setHero(i, instant){
+  const it = heroItems[i]; if(!it) return;
+  heroIdx = i; const img = $('hero-img');
+  const apply = () => {
+    img.src = `${IMG}/w1280${it.backdrop}`; img.classList.remove('fade');
+    $('hero-meta').textContent = `★ ${it.rating}  |  ${it.year}`;
+    $('hero-title').textContent = it.title; $('hero-desc').textContent = it.desc;
+    $('hero-play').dataset.key = it.key;
+    document.querySelectorAll('#hero-dots .dot').forEach((d, j) => d.classList.toggle('on', j === i));
+  };
+  if(instant || settings.lite) apply(); else { img.classList.add('fade'); setTimeout(apply, 250); }
+}
+function stopHero(){ if(heroTimer){ clearInterval(heroTimer); heroTimer = null; } }
+function setupHeroTimer(){
+  stopHero();
+  if(!settings.hero || heroItems.length < 2) return;
+  heroTimer = setInterval(() => {
+    if(document.hidden || activeScreen() !== 'main-screen' || searchMode) return;
+    setHero((heroIdx + 1) % heroItems.length);
+  }, 7000);
+}
+
+/* ============ ENDLESS ROWS ============ */
+const rowState = {};
+let io = null;
+function refreshRowsIfDirty(){
+  if(!rowsDirty) return;
+  rowsDirty = false; const y = $('main-screen').scrollTop; renderRows(); $('main-screen').scrollTop = y;
+}
+function observeMore(){
+  if(!('IntersectionObserver' in window)) return;
+  if(!io) io = new IntersectionObserver(es => es.forEach(en => { if(en.isIntersecting) loadMore(en.target.dataset.more, en.target); }), { rootMargin:'0px 500px 0px 500px' });
+  document.querySelectorAll('#rows .more').forEach(el => io.observe(el));
+}
+async function loadMore(k, sentinel){
+  const row = catalog.find(r => r.k === k), cfg = ROWS.find(r => r.k === k);
+  if(!row || !cfg) return;
+  const st = rowState[k] || (rowState[k] = { page:1, loading:false, done:false });
+  if(st.loading || st.done) return;
+  st.loading = true;
+  try{
+    const d = await tmdb(cfg.path, Object.assign({}, cfg.p, { page: st.page + 1 }));
+    st.page++;
+    const have = {}; row.items.forEach(i => { have[i.key] = 1; });
+    const fresh = (d.results || []).map(r => mapItem(r, cfg.type)).filter(it => it.poster && !have[it.key]);
+    fresh.forEach(it => { reg(it); row.items.push(it); });
+    if(sentinel && sentinel.parentNode && fresh.length){
+      const tmp = document.createElement('div'); tmp.innerHTML = fresh.map(cardHTML).join('');
+      while(tmp.firstChild) sentinel.parentNode.insertBefore(tmp.firstChild, sentinel);
+    }
+    if(st.page >= Math.min(d.total_pages || 1, 25) || !(d.results || []).length){
+      st.done = true; if(sentinel){ if(io) io.unobserve(sentinel); sentinel.remove(); }
+    } else if(sentinel && io){ io.unobserve(sentinel); io.observe(sentinel); }
+  }catch(e){ st.done = true; }
+  st.loading = false;
+}
+
+/* ============ EXPLORE ============ */
+const ex = { page:0, loading:false, done:false, seq:0, inited:false };
+let exIO = null;
+function exParams(){
+  const type = $('ex-type').value, dec = $('ex-dec').value, genre = $('ex-genre').value, sort = $('ex-sort').value;
+  const f = type === 'movie' ? 'primary_release_date' : 'first_air_date';
+  const today = new Date().toISOString().slice(0, 10), p = {};
+  p[f + '.gte'] = (dec === 'all' ? '1980' : dec) + '-01-01';
+  p[f + '.lte'] = (dec === 'all' || +dec === 2020) ? today : (+dec + 9) + '-12-31';
+  if(sort === 'rate'){ p.sort_by = 'vote_average.desc'; p['vote_count.gte'] = type === 'movie' ? 500 : 200; }
+  else if(sort === 'new'){ p.sort_by = f + '.desc'; p['vote_count.gte'] = 30; }
+  else { p.sort_by = 'popularity.desc'; p['vote_count.gte'] = 100; }
+  if(genre) p.with_genres = genre;
+  return { path: '/discover/' + type, p, type: type === 'movie' ? 'movie' : 'series' };
+}
+async function exLoad(reset){
+  if(reset){ ex.seq++; ex.page = 0; ex.done = false; ex.loading = false; $('ex-grid').innerHTML = ''; $('ex-status').textContent = ''; }
+  if(ex.loading || ex.done) return;
+  ex.loading = true; const seq = ex.seq, cfg = exParams();
+  try{
+    const d = await tmdb(cfg.path, Object.assign({}, cfg.p, { page: ex.page + 1 }));
+    if(seq !== ex.seq) return;
+    ex.page++;
+    const items = (d.results || []).map(r => mapItem(r, cfg.type)).filter(it => it.poster);
+    $('ex-grid').insertAdjacentHTML('beforeend', items.map(cardHTML).join(''));
+    if(ex.page >= Math.min(d.total_pages || 1, 500) || !(d.results || []).length) ex.done = true;
+    if(!$('ex-grid').children.length) $('ex-status').textContent = t('noResults');
+  }catch(e){ if(seq === ex.seq){ ex.done = true; $('ex-status').textContent = t('loadFail'); } }
+  if(seq === ex.seq){
+    ex.loading = false;
+    if(!ex.done && exIO){ exIO.unobserve($('ex-more')); exIO.observe($('ex-more')); }
+  }
+}
+async function exGenres(){
+  const sel = $('ex-genre'), type = $('ex-type').value;
+  sel.innerHTML = '<option value="">' + esc(t('allGenres')) + '</option>';
+  try{
+    const d = await tmdb('/genre/' + type + '/list');
+    if($('ex-type').value !== type) return;
+    sel.innerHTML += (d.genres || []).map(g => '<option value="' + g.id + '">' + esc(g.name) + '</option>').join('');
+  }catch(e){}
+}
+
+/* ============ SEARCH ============ */
+let searchTimer = null, searchSeq = 0;
+function onSearchInput(){
+  clearTimeout(searchTimer); const q = $('search-input').value.trim();
+  searchTimer = setTimeout(() => doSearch(q), 300);
+}
+async function doSearch(q){
+  const seq = ++searchSeq;
+  if(!q){ searchMode = false; renderMain(); return; }
+  searchMode = true; $('hero').style.display = 'none';
+  $('rows').innerHTML = `<div class="row"><div class="track">${'<div class="sk"></div>'.repeat(8)}</div></div>`;
+  let items = [];
+  try{
+    const d = await tmdb('/search/multi', { query:q });
+    items = (d.results || []).filter(r => (r.media_type === 'movie' || r.media_type === 'tv') && r.poster_path)
+      .map(r => mapItem(r, r.media_type === 'tv' ? 'series' : 'movie'));
+  }catch{
+    const ql = q.toLowerCase(); const seen = {};
+    catalog.forEach(r => r.items.forEach(it => { if(it.title.toLowerCase().includes(ql) && !seen[it.key]){ seen[it.key] = 1; items.push(it); } }));
+  }
+  if(seq !== searchSeq) return;
+  $('rows').innerHTML = `<div class="row-title" style="margin-bottom:1rem">${t('searchResults')}: “${esc(q)}”</div>` +
+    (items.length ? `<div class="grid">${items.map(cardHTML).join('')}</div>` : `<div class="empty">${t('noResults')}</div>`);
+}
+
+/* ============ FAVORITES / HISTORY ============ */
+function toggleFav(key){
+  if(!me) return; const it = itemMap[key]; if(!it) return;
+  let favs = getFavs(); const i = favs.findIndex(f => f.key === key);
+  if(i > -1) favs.splice(i, 1); else favs.unshift(it);
+  save(K('favs'), favs);
+  document.querySelectorAll(`[data-fav="${key}"]`).forEach(b => b.classList.toggle('on', i === -1));
+  if(activeScreen() === 'main-screen' && !searchMode){ const y = $('main-screen').scrollTop; renderRows(); $('main-screen').scrollTop = y; }
+  if(activeScreen() === 'details-screen' && current && current.key === key) updateDetBtns();
+}
+function pushHistory(it){
+  let h = getHist().filter(x => x.key !== it.key); h.unshift(it); save(K('hist'), h.slice(0, 12)); rowsDirty = true;
+}
+
+/* ============ DETAILS ============ */
+const statusKey = key => K('st') + '_' + key;
+function openItem(key){
+  const it = itemMap[key]; if(!it) return;
+  backTo = activeScreen() === 'explore-screen' ? 'explore-screen' : 'main-screen'; lastCardKey = key;
+  current = it; stopHero();
+  const st = load(statusKey(key), '');
+  $('det-card').innerHTML = `
+    ${it.backdrop ? `<img class="det-bd" src="${IMG}/w780${it.backdrop}" alt="" decoding="async">` : ''}
+    <div class="det-in">
+      <img class="det-poster" src="${posterUrl(it)}" alt="">
+      <div class="det-info">
+        <h2>${esc(it.title)}</h2>
+        <div class="chips"><span class="chip">${esc(it.year)}</span><span class="chip star">★ ${esc(it.rating)}</span><span class="chip">${it.type === 'series' ? 'TV' : 'Movie'}</span></div>
+        <p>${esc(it.desc) || '—'}</p>
+        <div class="chips" id="st-chips">
+          ${['want','watching','watched'].map(s => `<button class="chip focusable${st===s?' on':''}" data-act="status" data-s="${s}">${t('status'+s[0].toUpperCase()+s.slice(1))}</button>`).join('')}
+        </div>
+        <div class="hero-btns">
+          <button class="btn focusable" id="det-play" data-act="play" data-af></button>
+          <button class="btn ghost focusable" id="det-fav" data-act="detFav"></button>
+          <button class="btn ghost focusable" data-act="trailer">${t('trailer')}</button>
+        </div>
+        <div id="providers" class="prov"></div>
+      </div>
+    </div>`;
+  updateDetBtns(); loadProviders(it);
+  const area = $('series-area');
+  if(it.type === 'series'){ area.style.display = ''; loadSeasons(it); } else area.style.display = 'none';
+  renderComments(); showScreen('details-screen');
+}
+function updateDetBtns(){
+  if(!current) return;
+  const last = load(K('last') + '_' + current.key, null);
+  $('det-play').innerHTML = ICON_PLAY + ' ' + (last && current.type === 'series' ? `${t('continueEp')} S${last.s}E${last.e}` : t('watchNow'));
+  $('det-fav').textContent = isFav(current.key) ? t('inList') : t('addList');
+}
+async function loadSeasons(it){
+  $('seasons').innerHTML = ''; $('episodes').innerHTML = '';
+  try{
+    const d = await tmdb(`/tv/${it.id}`);
+    if(!current || current.key !== it.key) return;
+    const seasons = (d.seasons || []).filter(s => s.season_number > 0);
+    const last = load(K('last') + '_' + it.key, null);
+    const start = last && seasons.some(s => s.season_number === last.s) ? last.s : (seasons[0] && seasons[0].season_number);
+    $('seasons').innerHTML = seasons.map(s => `<button class="chip focusable${s.season_number===start?' on':''}" data-act="season" data-n="${s.season_number}">${esc(s.name)}</button>`).join('');
+    if(start != null) selectSeason(start);
+  }catch{ $('episodes').innerHTML = `<div class="empty">${t('loadFail')}</div>`; }
+}
+async function selectSeason(n){
+  document.querySelectorAll('#seasons .chip').forEach(c => c.classList.toggle('on', +c.dataset.n === n));
+  const it = current, box = $('episodes'), ck = it.id + '_' + n;
+  box.innerHTML = '<div class="empty">…</div>';
+  try{
+    if(!seasonCache[ck]) seasonCache[ck] = (await tmdb(`/tv/${it.id}/season/${n}`)).episodes || [];
+    if(current !== it) return;
+    const last = load(K('last') + '_' + it.key, null);
+    box.innerHTML = seasonCache[ck].map(e => `<button class="ep focusable${last && last.s===n && last.e===e.episode_number?' last':''}" data-act="ep" data-s="${n}" data-e="${e.episode_number}">${e.episode_number}. ${esc(e.name || 'Episode ' + e.episode_number)}</button>`).join('');
+  }catch{ box.innerHTML = `<div class="empty">${t('loadFail')}</div>`; }
+}
+function playCurrent(){
+  if(!current) return;
+  if(current.type === 'movie'){ openPlayer(current, 0, 0); return; }
+  const last = load(K('last') + '_' + current.key, null);
+  if(last){ openPlayer(current, last.s, last.e); return; }
+  const first = document.querySelector('#episodes .ep'); if(first) first.click();
+}
+
+/* ============ PROVIDERS & TRAILER ============ */
+async function loadProviders(it){
+  const box = $('providers'); if(!box) return;
+  box.innerHTML = '';
+  try{
+    const d = await tmdb('/' + (it.type === 'series' ? 'tv' : 'movie') + '/' + it.id + '/watch/providers', {});
+    if(!current || current.key !== it.key) return;
+    const r = (d.results || {})[settings.region || 'MA'];
+    const all = r ? [].concat(r.flatrate || [], r.rent || [], r.buy || []) : [];
+    const seen = {}, uniq = all.filter(p => seen[p.provider_id] ? false : (seen[p.provider_id] = 1));
+    if(!uniq.length){ box.innerHTML = '<span>' + esc(t('noProviders')) + '</span>'; return; }
+    box.innerHTML = '<span>' + esc(t('whereToWatch')) + ':</span>' + uniq.slice(0, 8).map(p =>
+      '<a href="' + esc(r.link) + '" target="_blank" rel="noopener noreferrer">' + (p.logo_path ? '<img src="' + IMG + '/w45' + p.logo_path + '" alt="">' : '') + esc(p.provider_name) + '</a>').join('') + '<small>JustWatch</small>';
+  }catch(e){}
+}
+async function openTrailer(){
+  if(!current) return;
+  const it = current;
+  try{
+    const d = await tmdb('/' + (it.type === 'series' ? 'tv' : 'movie') + '/' + it.id + '/videos', { include_video_language: [lang, 'en', 'null'].join(',') });
+    const vids = (d.results || []).filter(v => v.site === 'YouTube');
+    const v = vids.find(x => x.type === 'Trailer' && x.official) || vids.find(x => x.type === 'Trailer') || vids[0];
+    if(!v){ alert(t('noTrailer')); return; }
+    $('p-title').textContent = it.title + ' · ' + t('trailer');
+    $('p-servers').innerHTML = ''; $('p-hint').textContent = ''; playerCtx = null;
+    $('p-frame').src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.key) + '?autoplay=1&rel=0';
+    $('player').classList.add('active');
+  }catch(e){ alert(t('loadFail')); }
+}
+
+/* ============ COMMENTS ============ */
+const cmtKey = key => `flow2_cmts_${key}`;
+function renderComments(){
+  const key = current.key, list = load(cmtKey(key), []);
+  $('avg-rating').textContent = list.length
+    ? `${t('siteRating')}: ${(list.reduce((a, c) => a + c.rating, 0) / list.length).toFixed(1)} / 5 (${list.length})`
+    : t('noRating');
+  $('cmt-list').innerHTML = list.length ? list.map(c => `
+    <div class="cmt"><div class="cmt-h"><b>${esc(c.user)}</b><span style="display:flex;gap:.6rem;align-items:center"><span class="star">${'★'.repeat(c.rating)}${'☆'.repeat(5 - c.rating)}</span>
+    ${me && c.user === me.name ? `<button class="btn danger sm focusable" data-act="delCmt" data-id="${c.id}">${t('delete')}</button>` : ''}</span></div><div>${esc(c.text)}</div></div>`).join('')
+    : `<div class="empty" style="padding:1rem 0">${t('noComments')}</div>`;
+}
+function addComment(){
+  const text = $('cmt-text').value.trim(); if(!text || !me || !current) return;
+  const list = load(cmtKey(current.key), []);
+  list.unshift({ id: Date.now(), user: me.name, rating: +$('cmt-rating').value, text });
+  save(cmtKey(current.key), list); $('cmt-text').value = ''; renderComments();
+}
+
+/* ============ PLAYER ============ */
+let playerCtx = null;
+function srcFor(srv, it, s, e){ return it.type === 'movie' ? srv.movie(it.id) : srv.tv(it.id, s, e); }
+function openPlayer(it, s, e){
+  playerCtx = { it, s, e };
+  pushHistory(it);
+  if(it.type === 'series'){ save(K('last') + '_' + it.key, { s, e }); }
+  $('p-title').textContent = it.type === 'series' ? `${it.title} · S${s}E${e}` : it.title;
+  $('p-hint').textContent = t('playHint');
+  const start = Math.max(0, SERVERS.findIndex(x => x.id === settings.server));
+  $('p-servers').innerHTML = SERVERS.map((sv, i) => `<button class="btn ghost sm focusable${i===start?' on':''}" data-act="server" data-i="${i}" style="${i===start?'border-color:var(--accent)':''}">${sv.name}</button>`).join('');
+  $('p-frame').src = srcFor(SERVERS[start], it, s, e);
+  $('player').classList.add('active');
+}
+function closePlayer(){
+  $('p-frame').src = 'about:blank'; $('player').classList.remove('active');
+  if(current && activeScreen() === 'details-screen'){ updateDetBtns(); if(current.type === 'series'){ const n = document.querySelector('#seasons .chip.on'); if(n) selectSeason(+n.dataset.n); } }
+  if(activeScreen() === 'main-screen') renderRows();
+}
+
+/* ============ DATA ============ */
+function exportData(){
+  const out = {};
+  for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(k.startsWith('flow')) out[k] = localStorage.getItem(k); }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type:'application/json' }));
+  a.download = 'flow-tv-backup.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function importData(file){
+  const r = new FileReader();
+  r.onload = () => {
+    try{ const d = JSON.parse(r.result); Object.keys(d).forEach(k => { if(k.startsWith('flow') && !k.startsWith('flow2_cat_')) localStorage.setItem(k, d[k]); }); location.reload(); }
+    catch{ alert('Invalid file'); }
+  };
+  r.readAsText(file);
+}
+
+/* ============ ACTIONS ============ */
+const actions = {
+  pickProfile: el => pickProfile(+el.dataset.id),
+  addProfile: () => openModal(null),
+  editProfile: el => openModal(+el.dataset.id),
+  saveProfile, closeModal, verifyPin, showProfiles,
+  changePin: el => changePin(+el.dataset.id),
+  delProfile: el => delProfile(+el.dataset.id),
+  openSettings: () => { syncSettingsUI(); showScreen('settings-screen'); },
+  backFromSettings: () => { if(me){ showScreen('main-screen'); renderMain(); } else showProfiles(); },
+  goMain: () => { showScreen('main-screen', true); refreshRowsIfDirty(); setupHeroTimer(); },
+  goBack: () => {
+    showScreen(backTo, true);
+    if(backTo === 'main-screen'){ refreshRowsIfDirty(); setupHeroTimer(); }
+    setTimeout(() => { const c = document.querySelector('#' + backTo + ' .card[data-key="' + lastCardKey + '"]'); if(c) c.focus({ preventScroll:true }); }, 80);
+  },
+  openExplore: () => {
+    showScreen('explore-screen', true);
+    if(!ex.inited){ ex.inited = true; if('IntersectionObserver' in window){ exIO = new IntersectionObserver(es => { if(es[0].isIntersecting && activeScreen() === 'explore-screen') exLoad(false); }, { rootMargin:'0px 0px 800px 0px' }); exIO.observe($('ex-more')); } exGenres(); exLoad(true); }
+  },
+  openItem: el => openItem(el.dataset.key),
+  random: () => { const all = []; catalog.forEach(r => all.push(...r.items)); if(all.length) openItem(all[Math.floor(Math.random() * all.length)].key); },
+  heroTo: el => setHero(+el.dataset.i, false),
+  retry: () => ensureCatalog(),
+  play: playCurrent,
+  detFav: () => toggleFav(current.key),
+  trailer: () => openTrailer(),
+  status: el => { save(statusKey(current.key), el.dataset.s); document.querySelectorAll('#st-chips .chip').forEach(c => c.classList.toggle('on', c === el)); },
+  season: el => selectSeason(+el.dataset.n),
+  ep: el => openPlayer(current, +el.dataset.s, +el.dataset.e),
+  addComment, delCmt: el => { if(!confirm(t('confirmDel'))) return; save(cmtKey(current.key), load(cmtKey(current.key), []).filter(c => c.id !== +el.dataset.id)); renderComments(); },
+  server: el => {
+    const i = +el.dataset.i, { it, s, e } = playerCtx;
+    document.querySelectorAll('#p-servers .btn').forEach((b, j) => { b.classList.toggle('on', j === i); b.style.borderColor = j === i ? 'var(--accent)' : ''; });
+    $('p-frame').src = srcFor(SERVERS[i], it, s, e);
+  },
+  closePlayer,
+  tab: el => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === el));
+    document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === el.dataset.tab));
+  },
+  accent: el => { settings.accent = el.dataset.c; saveSettings(); applySettings(); syncSettingsUI(); },
+  applyBg: () => { settings.bg = $('bg-url').value.trim(); saveSettings(); applySettings(); },
+  resetBg: () => { settings.bg = ''; $('bg-url').value = ''; saveSettings(); applySettings(); },
+  toggle: el => { const k = el.dataset.key; settings[k] = !settings[k]; saveSettings(); applySettings(); syncSettingsUI(); if(k === 'showHistory') renderRows(); },
+  clearHistory: () => { if(me && confirm(t('confirmClear'))){ del(K('hist')); } },
+  clearFavs: () => { if(me && confirm(t('confirmClear'))){ del(K('favs')); } },
+  resetSettings: () => { if(confirm(t('confirmClear'))){ del(K('set')); loadSettings(); syncSettingsUI(); } },
+  saveNet: () => { save('flow2_net', { api: $('net-api').value.trim(), img: $('net-img').value.trim() }); Object.keys(localStorage).filter(k => k.indexOf('flow2_cat_') === 0).forEach(k => del(k)); location.reload(); },
+  resetNet: () => { del('flow2_net'); Object.keys(localStorage).filter(k => k.indexOf('flow2_cat_') === 0).forEach(k => del(k)); location.reload(); },
+  exportData, importData: () => $('import-file').click()
+};
 
 document.addEventListener('click', e => {
-  const btn = e.target.closest('[data-act]');
-  if(!btn) return;
-  const act = btn.getAttribute('data-act');
-  if(act === 'addProfile') {
-    profiles.push({ name: 'حساب جديد', avatar: '😎', pin: '' });
-    save('flow_profiles', profiles);
-    renderProfiles();
-  } else if(act === 'openSettings') {
-    showScreen('settings-screen');
-  } else if(act === 'showProfiles') {
-    showScreen('profiles-screen');
-  } else if(act === 'goBack' || act === 'goMain' || act === 'backFromSettings') {
-    showScreen('main-screen');
-  } else if(act === 'closePlayer') {
-    document.getElementById('player').classList.remove('active');
-    document.getElementById('p-frame').src = '';
-  } else if(act === 'openItem') {
-    if(currentItem) openDetails(currentItem);
-  }
+  const rs = e.target.closest('[data-scroll]');
+  if(rs){ const tr = rs.closest('.row').querySelector('.track'); const rtl = document.documentElement.dir === 'rtl'; tr.scrollBy({ left: (+rs.dataset.scroll) * (rtl ? -1 : 1) * tr.clientWidth * 0.85 }); return; }
+  const fav = e.target.closest('[data-fav]'); if(fav){ e.stopPropagation(); toggleFav(fav.dataset.fav); return; }
+  const act = e.target.closest('[data-act]'); if(act){ const fn = actions[act.dataset.act]; if(fn) fn(act, e); return; }
+  const card = e.target.closest('.card[data-key]'); if(card) openItem(card.dataset.key);
 });
 
-renderProfiles();
-if(profiles.length === 0) {
-  profiles.push({ name: 'عمران', avatar: '🎬', pin: '' });
-  save('flow_profiles', profiles);
-  renderProfiles();
-}
+/* inputs */
+$('search-input').addEventListener('input', onSearchInput);
+$('pin-input').addEventListener('keydown', e => { if(e.key === 'Enter') verifyPin(); });
+$('cmt-text').addEventListener('keydown', e => { if(e.key === 'Enter') addComment(); });
+$('m-type').addEventListener('change', toggleAvatarPh);
+$('accent-custom').addEventListener('input', e => { settings.accent = e.target.value; saveSettings(); applySettings(); });
+$('dim').addEventListener('input', e => { settings.dim = +e.target.value; $('dim-val').textContent = Math.round(settings.dim * 100) + '%'; saveSettings(); applySettings(); });
+$('font').addEventListener('change', e => { settings.font = +e.target.value; saveSettings(); applySettings(); });
+$('card').addEventListener('change', e => { settings.card = +e.target.value; saveSettings(); applySettings(); });
+$('server').addEventListener('change', e => { settings.server = e.target.value; saveSettings(); });
+$('region').addEventListener('change', e => { settings.region = e.target.value; saveSettings(); });
+$('ex-type').addEventListener('change', () => { exGenres(); exLoad(true); });
+['ex-dec','ex-genre','ex-sort'].forEach(id => $(id).addEventListener('change', () => exLoad(true)));
+$('lang').addEventListener('change', e => {
+  lang = e.target.value; save('flow2_lang', lang); applyLang(); syncSettingsUI();
+  ex.inited = false; $('ex-grid').innerHTML = ''; catalogReady = false; catalogLoading = false; catalog = []; if(me) ensureCatalog();
+});
+$('import-file').addEventListener('change', e => { if(e.target.files[0]) importData(e.target.files[0]); });
 
-// تشغيل واجهة الحسابات تلقائياً عند فتح الموقع
-showScreen('profiles-screen');
+/* image fallback */
+document.addEventListener('error', e => {
+  const im = e.target;
+  if(im.tagName === 'IMG' && !im.dataset.f){ im.dataset.f = 1; im.src = PLACEHOLDER; }
+}, true);
+
+/* keyboard: spatial navigation + back */
+document.addEventListener('keydown', e => {
+  const tag = (document.activeElement || {}).tagName;
+  const typing = tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA';
+  if(e.key === 'Escape' || (e.key === 'Backspace' && !typing)){
+    if($('player').classList.contains('active')) closePlayer();
+    else if($('modal').classList.contains('active')) closeModal();
+    else if(activeScreen() === 'details-screen') actions.goBack();
+    else if(activeScreen() === 'explore-screen') actions.goMain();
+    else if(activeScreen() === 'settings-screen') actions.backFromSettings();
+    return;
+  }
+  const cur = document.activeElement;
+  if((e.key === 'Enter' || e.key === ' ') && cur && cur.classList.contains('card')){ e.preventDefault(); cur.click(); return; }
+  if((e.key === 'f' || e.key === 'F') && cur && cur.classList.contains('card') && !typing){ toggleFav(cur.dataset.key); return; }
+
+  if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) return;
+  if(typing && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && tag !== 'SELECT') return;
+  if(tag === 'SELECT') return;
+  const scope = $('player').classList.contains('active') ? $('player') : $('modal').classList.contains('active') ? $('modal') : document.querySelector('.screen.active');
+  if(!scope) return;
+  if(!cur || !scope.contains(cur) || !cur.classList.contains('focusable')){ const f = scope.querySelector('.focusable'); if(f){ e.preventDefault(); f.focus(); } return; }
+  e.preventDefault();
+  const vh = innerHeight, list = Array.from(scope.querySelectorAll('.focusable')).filter(el => el !== cur && el.offsetParent !== null);
+  const r0 = cur.getBoundingClientRect(), cx = r0.left + r0.width / 2, cy = r0.top + r0.height / 2;
+  let best = null, bd = Infinity;
+  for(const el of list){
+    const r = el.getBoundingClientRect();
+    if(r.width === 0 || r.bottom < -vh || r.top > vh * 2) continue;
+    const dx = r.left + r.width / 2 - cx, dy = r.top + r.height / 2 - cy;
+    const sameRow = Math.abs(dy) < Math.max(r0.height, r.height) * 0.6;
+    let ok = false;
+    if(e.key === 'ArrowRight') ok = dx > 8 && sameRow;
+    else if(e.key === 'ArrowLeft') ok = dx < -8 && sameRow;
+    else if(e.key === 'ArrowDown') ok = dy > Math.min(r0.height, r.height) * 0.5;
+    else ok = dy < -Math.min(r0.height, r.height) * 0.5;
+    if(!ok) continue;
+    const d = (e.key === 'ArrowLeft' || e.key === 'ArrowRight') ? Math.abs(dx) + Math.abs(dy) * 3 : Math.abs(dy) + Math.abs(dx) * 2;
+    if(d < bd){ bd = d; best = el; }
+  }
+  if(best){ best.focus({ preventScroll:true }); best.scrollIntoView({ block:'nearest', inline:'nearest', behavior: settings.lite ? 'auto' : 'smooth' }); }
+});
+
+/* clock */
+function tick(){ $('clock').textContent = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+tick(); setInterval(tick, 30000);
+
+/* ============ BOOT ============ */
+applyLang();
+loadSettings();
+showProfiles();      // show immediately, never wait for the network
+ensureCatalog();     // prefetch in background (uses cache when fresh)
 </script>
 </body>
 </html>
