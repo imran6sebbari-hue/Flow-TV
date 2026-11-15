@@ -597,12 +597,17 @@ const activeScreen = () => (document.querySelector('.screen.active') || {}).id;
 function avatarHTML(p){ return p.isUrl ? `<img src="${esc(p.avatar)}" alt="">` : esc(p.avatar); }
 
 function showProfiles(){
-  me = null; stopHero(); loadSettings();
-  $('profiles-list').innerHTML = profiles.map(p => `
-    <button class="profile focusable" data-act="pickProfile" data-id="${p.id}">
-      <span class="avatar">${avatarHTML(p)}</span><span style="font-weight:700">${esc(p.name)}</span>
-    </button>`).join('');
-  showScreen('profiles-screen');
+  // إلا مكانش شكون داخل، كيدخل ديركت بالحساب الأول
+  if(!me && profiles.length > 0){
+    login(profiles[0]);
+  } else {
+    me = null; stopHero(); loadSettings();
+    $('profiles-list').innerHTML = profiles.map(p => `
+      <button class="profile focusable" data-act="pickProfile" data-id="${p.id}">
+        <span class="avatar">${avatarHTML(p)}</span><span style="font-weight:700">${esc(p.name)}</span>
+      </button>`).join('');
+    showScreen('profiles-screen');
+  }
 }
 function pickProfile(id){
   pendingUser = profiles.find(p => p.id === id); if(!pendingUser) return;
@@ -1231,7 +1236,7 @@ tick(); setInterval(tick, 30000);
 /* ============ BOOT ============ */
 applyLang();
 loadSettings();
-showProfiles();      
+login(profiles[0]);     
 ensureCatalog();     
 </script>
 </body>
