@@ -486,7 +486,7 @@ async function tmdbSafe(path, params){
 }
 
 /* ============ STATE ============ */
-let profiles = load('flow_profiles', null) || [{ id:1, name:'عمران', avatar:'🦁', isUrl:false, pin:'', permanent:true }];
+let profiles = load('flow_profiles', null) || [];
 let me = null, pendingUser = null, settings = { ...DEFAULTS };
 let catalog = [], catalogReady = false, catalogFailed = false, catalogLoading = false;
 const itemMap = {};           // key -> item
