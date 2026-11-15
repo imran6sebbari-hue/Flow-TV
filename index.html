@@ -267,7 +267,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="dots" id="hero-dots"></div>
     </section>
     <div id="rows"></div>
-    <div class="attr">This product uses the TMDB API but is not endorsed or certified by TMDB.<br>Streaming availability data by JustWatch.</div>
+    <div class="attr">This product uses the TMDB API but is not endorsed or certified by TMDB.<br>Streaming availability data by JustWatch & ShoofAflam.</div>
   </div>
 </div>
 
@@ -409,7 +409,9 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 <div id="player">
   <div class="p-top">
     <div class="p-title" id="p-title"></div>
-    <div class="p-servers" id="p-servers"></div>
+    <div class="p-servers" id="p-servers">
+      <select id="p-server-select" class="input focusable sm" style="width:auto;padding:.4rem .8rem"></select>
+    </div>
     <div class="p-hint" id="p-hint"></div>
     <button class="btn danger focusable" data-act="closePlayer" data-i18n="closePlayer"></button>
   </div>
@@ -420,6 +422,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 'use strict';
 /* ============ CONFIG ============ */
 const TMDB_KEY = '960f99e17fd1b712a30cc456631845c2';
+const SHOOFAFLAM_API = 'https://shoofaflam.tv/api'; 
 let API = 'https://api.themoviedb.org/3';
 let IMG = 'https://image.tmdb.org/t/p';
 // Optional proxy (Settings > Data > Connection) for networks that block TMDB
@@ -428,11 +431,14 @@ try{ NET = JSON.parse(localStorage.getItem('flow2_net')) || {}; }catch(e){ NET =
 if(NET.api) API = String(NET.api).replace(/\/+$/, '');
 if(NET.img) IMG = String(NET.img).replace(/\/+$/, '');
 const CACHE_TTL = 6 * 3600 * 1000;
-// Player servers: edit this list to change / add sources.
+
+/* --- هنا السيرفرات المختارة بجودة عالية --- */
 const SERVERS = [
-  { id: 'vidsrc',    name: 'VidSrc',    movie: id => `https://vidsrc.to/embed/movie/${id}`,        tv: (id,s,e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}` },
-  { id: 'autoembed', name: 'AutoEmbed', movie: id => `https://player.autoembed.cc/embed/movie/${id}`, tv: (id,s,e) => `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}` }
+  { id: 'vidsrc',    name: 'VidSrc (سيرفر 1)',    movie: id => `https://vidsrc.to/embed/movie/${id}`,        tv: (id,s,e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}` },
+  { id: 'autoembed', name: 'AutoEmbed (سيرفر 2)', movie: id => `https://player.autoembed.cc/embed/movie/${id}`, tv: (id,s,e) => `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}` },
+  { id: 'shoofaflam',name: 'شوف أفلام (عربي)',   movie: id => `https://shoofaflam.tv/embed/${id}`, tv: (id,s,e) => `https://shoofaflam.tv/embed/${id}` }
 ];
+
 const ACCENTS = ['#e5484d','#f97316','#eab308','#22c55e','#14b8a6','#38bdf8','#6366f1','#a855f7','#ec4899','#ffffff'];
 const DEFAULTS = { accent:'#e5484d', bg:'', dim:0.85, font:16, card:150, lite:false, hero:true, showHistory:true, showClock:true, server:'vidsrc', region:'MA' };
 const PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450"><rect width="100%" height="100%" fill="#1e1e28"/><text x="50%" y="50%" fill="#555" font-size="22" text-anchor="middle" font-family="sans-serif">No poster</text></svg>');
@@ -441,14 +447,16 @@ const PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns=
 const I18N = {
  ar:{whowatch:'من يشاهد الآن؟',addProfile:'إضافة حساب',settings:'الإعدادات',enterPin:'أدخل رمز الحماية (PIN)',login:'دخول',switchProfile:'تبديل الحساب',wrongPin:'رمز الحماية غير صحيح',search:'ابحث عن فيلم أو مسلسل...',watchNow:'شاهد الآن',continueWatching:'متابعة المشاهدة',watchlist:'قائمتي',backHome:'العودة للرئيسية',back:'رجوع',season:'الموسم',episode:'الحلقة',ratings:'التقييمات والتعليقات',writeComment:'اكتب تعليقك...',send:'إرسال',noComments:'لا توجد تعليقات بعد. كن أول من يعلق!',siteRating:'تقييم الموقع',noRating:'لا يوجد تقييم بعد',delete:'حذف',year:'السنة',searchResults:'نتائج البحث',noResults:'لا توجد نتائج',closePlayer:'إغلاق',statusWant:'أريد مشاهدته',statusWatching:'أشاهده الآن',statusWatched:'شاهدته',addList:'أضف للقائمة',inList:'في القائمة',continueEp:'متابعة',
   c_trending:'الأفلام الرائجة',c_top:'الأعلى تقييماً',c_retro:'كلاسيكيات القرن الماضي',c_action:'أكشن ومغامرات',c_scifi:'خيال علمي وفانتازيا',c_drama:'دراما وغموض',c_tv:'مسلسلات رائجة',c_anime:'أنمي ورسوم متحركة',
+  c_ar_movies:'أفلام عربية',c_ar_tv:'مسلسلات عربية',c_ar_ma:'أفلام مغربية',
   tabLook:'المظهر',tabPlay:'التشغيل والعرض',tabAcc:'الحسابات واللغة',tabData:'البيانات',accent:'لون الواجهة',bgImage:'صورة الخلفية',bgHint:'رابط صورة اختياري',apply:'تطبيق',reset:'إعادة ضبط',dim:'تعتيم الخلفية',textSize:'حجم النصوص',cardSize:'حجم الملصقات',sizeS:'صغير',sizeM:'عادي',sizeL:'كبير',sizeXL:'كبير جداً',lite:'وضع الأداء الخفيف',liteHint:'يوقف الحركات والانتقالات (مفيد للأجهزة الضعيفة)',defServer:'سيرفر التشغيل الافتراضي',heroSlider:'تغيير البانر تلقائياً',heroHint:'يبدّل الفيلم المميز كل بضع ثوانٍ',showHistory:'إظهار «متابعة المشاهدة»',showClock:'إظهار الساعة',language:'لغة الواجهة',profiles:'الحسابات',clearHistory:'مسح سجل المشاهدة',clearWatchlist:'مسح القائمة',clear:'مسح',resetSettings:'إعادة ضبط كل الإعدادات',backup:'نسخة احتياطية',backupHint:'تصدير/استيراد الحسابات والقوائم والتعليقات',export:'تصدير',import:'استيراد',
-  newProfile:'حساب جديد',editProfile:'تعديل الحساب',userName:'اسم المستخدم',pinOptional:'رمز PIN (اختياري)',save:'حفظ',cancel:'إلغاء',edit:'تعديل',changePin:'تغيير PIN',main:'رئيسي',noPass:'بدون رمز',nameReq:'الرجاء إدخال الاسم',confirmDel:'حذف هذا الحساب؟',confirmClear:'هل أنت متأكد؟',curPin:'أدخل رمز PIN الحالي (اتركه فارغاً إن لم يوجد):',newPin:'أدخل رمز PIN الجديد (فارغ = بدون رمز):',emojiPh:'اكتب إيموجي 🦁',urlPh:'رابط الصورة https://...',loadFail:'تعذّر التحميل. تحقق من الاتصال.',netTip:'إذا كان مزوّد الإنترنت يحجب TMDB جرّب VPN أو غيّر DNS (1.1.1.1) أو ضع بروكسي في الإعدادات ← البيانات.',net:'الاتصال (بروكسي TMDB)',netHint:'اختياري: عنوان بروكسي إذا كان TMDB محجوباً عندك',c_d20:'أفلام 2020 وما بعد',c_d10:'أفلام 2010–2019',c_d00:'أفلام 2000–2009',c_d90:'أفلام التسعينات',c_d80:'أفلام الثمانينات',c_tvnew:'مسلسلات حديثة (2015+)',c_tvold:'مسلسلات كلاسيكية (1980–2009)',explore:'استكشاف',movies:'أفلام',series:'مسلسلات',allYears:'كل السنوات (منذ 1980)',allGenres:'كل التصنيفات',popular:'الأشهر',topRated:'الأعلى تقييماً',newest:'الأحدث',trailer:'الإعلان',noTrailer:'لا يوجد إعلان لهذا العنوان',whereToWatch:'متوفر على',noProviders:'غير متوفر على منصات رسمية في منطقتك (حسب JustWatch)',region:'المنطقة (للمنصات الرسمية)',playHint:'إذا ظهرت «Media not found» فالعنوان غير متوفر في هذا السيرفر. جرّب سيرفراً آخر، أو شاهد الإعلان/المنصات الرسمية من صفحة التفاصيل.',retry:'إعادة المحاولة',done:'تم'},
+  newProfile:'حساب جديد',editProfile:'تعديل الحساب',userName:'اسم المستخدم',pinOptional:'رمز PIN (اختياري)',save:'حفظ',cancel:'إلغاء',edit:'تعديل',changePin:'تغيير PIN',main:'رئيسي',noPass:'بدون رمز',nameReq:'الرجاء إدخال الاسم',confirmDel:'حذف هذا الحساب؟',confirmClear:'هل أنت متأكد؟',curPin:'أدخل رمز PIN الحالي (اتركه فارغاً إن لم يوجد):',newPin:'أدخل رمز PIN الجديد (فارغ = بدون رمز):',emojiPh:'اكتب إيموجي 🦁',urlPh:'رابط الصورة https://...',loadFail:'تعذّر التحميل. تحقق من الاتصال.',netTip:'إذا كان مزوّد الإنترنت يحجب TMDB جرّب VPN أو غيّر DNS (1.1.1.1) أو ضع بروكسي في الإعدادات ← البيانات.',net:'الاتصال (بروكسي TMDB)',netHint:'اختياري: عنوان بروكسي إذا كان TMDB محجوباً عندك',c_d20:'أفلام 2020 وما بعد',c_d10:'أفلام 2010–2019',c_d00:'أفلام 2000–2009',c_d90:'أفلام التسعينات',c_d80:'أفلام الثمانينات',c_tvnew:'مسلسلات حديثة (2015+)',c_tvold:'مسلسلات كلاسيكية (1980–2009)',explore:'استكشاف',movies:'أفلام',series:'مسلسلات',allYears:'كل السنوات (منذ 1980)',allGenres:'كل التصنيفات',popular:'الأشهر',topRated:'الأعلى تقييماً',newest:'الأحدث',trailer:'الإعلان',noTrailer:'لا يوجد إعلان لهذا العنوان',whereToWatch:'متوفر على',noProviders:'غير متوفر على منصات رسمية في منطقتك (حسب JustWatch)',region:'المنطقة (للمنصات الرسمية)',playHint:'إذا ظهرت «Media not found» فالعنوان غير متوفر في هذا السيرفر. جرّب سيرفراً آخر، أو شاهد الإعلان/المنصات الرسمية من صفحة التفاصيل.',retry:'إعادة المحاولة',done:'تم',shoofaflamTitle:'شوف أفلام (مصدر عربي)'},
  en:{whowatch:"Who's watching?",addProfile:'Add profile',settings:'Settings',enterPin:'Enter your PIN',login:'Enter',switchProfile:'Switch profile',wrongPin:'Wrong PIN',search:'Search movies or shows...',watchNow:'Watch now',continueWatching:'Continue watching',watchlist:'My list',backHome:'Back to home',back:'Back',season:'Season',episode:'Episode',ratings:'Ratings & comments',writeComment:'Write a comment...',send:'Send',noComments:'No comments yet. Be the first!',siteRating:'Site rating',noRating:'No ratings yet',delete:'Delete',year:'Year',searchResults:'Search results',noResults:'No results',closePlayer:'Close',statusWant:'Want to watch',statusWatching:'Watching',statusWatched:'Watched',addList:'Add to list',inList:'In my list',continueEp:'Continue',
   c_trending:'Trending movies',c_top:'Top rated',c_retro:'Retro classics',c_action:'Action & adventure',c_scifi:'Sci-fi & fantasy',c_drama:'Drama & mystery',c_tv:'Popular TV shows',c_anime:'Anime & animation',
+  c_ar_movies:'Arabic movies',c_ar_tv:'Arabic TV shows',c_ar_ma:'Moroccan movies',
   tabLook:'Appearance',tabPlay:'Playback & display',tabAcc:'Accounts & language',tabData:'Data',accent:'Accent color',bgImage:'Background image',bgHint:'Optional image URL',apply:'Apply',reset:'Reset',dim:'Background dimming',textSize:'Text size',cardSize:'Poster size',sizeS:'Small',sizeM:'Normal',sizeL:'Large',sizeXL:'Extra large',lite:'Lite performance mode',liteHint:'Disables animations (helps weak devices)',defServer:'Default player server',heroSlider:'Auto-rotate banner',heroHint:'Switches the featured title every few seconds',showHistory:'Show “Continue watching”',showClock:'Show clock',language:'Interface language',profiles:'Profiles',clearHistory:'Clear watch history',clearWatchlist:'Clear my list',clear:'Clear',resetSettings:'Reset all settings',backup:'Backup',backupHint:'Export / import profiles, lists and comments',export:'Export',import:'Import',
-  newProfile:'New profile',editProfile:'Edit profile',userName:'Username',pinOptional:'PIN (optional)',save:'Save',cancel:'Cancel',edit:'Edit',changePin:'Change PIN',main:'Main',noPass:'No PIN',nameReq:'Please enter a name',confirmDel:'Delete this profile?',confirmClear:'Are you sure?',curPin:'Enter current PIN (empty if none):',newPin:'Enter new PIN (empty = no PIN):',emojiPh:'Type an emoji 🦁',urlPh:'Image URL https://...',loadFail:'Failed to load. Check your connection.',netTip:'If your ISP blocks TMDB, try a VPN, change DNS (1.1.1.1), or set a proxy in Settings > Data.',net:'Connection (TMDB proxy)',netHint:'Optional: proxy address if TMDB is blocked on your network',c_d20:'2020s movies',c_d10:'2010s movies',c_d00:'2000s movies',c_d90:'90s movies',c_d80:'80s movies',c_tvnew:'Recent shows (2015+)',c_tvold:'Classic shows (1980–2009)',explore:'Explore',movies:'Movies',series:'TV shows',allYears:'All years (since 1980)',allGenres:'All genres',popular:'Most popular',topRated:'Top rated',newest:'Newest',trailer:'Trailer',noTrailer:'No trailer found for this title',whereToWatch:'Available on',noProviders:'Not on official platforms in your region (per JustWatch)',region:'Region (official platforms)',playHint:'If you see “Media not found”, this title is not available on this server. Try another server, or use the trailer / official platforms on the details page.',retry:'Retry',done:'Done'},
- fr:{whowatch:'Qui regarde ?',addProfile:'Ajouter un profil',settings:'Paramètres',enterPin:'Entrez votre code PIN',login:'Entrer',switchProfile:'Changer de profil',wrongPin:'PIN incorrect',search:'Rechercher un film ou une série...',watchNow:'Regarder',continueWatching:'Continuer',watchlist:'Ma liste',backHome:"Retour à l'accueil",back:'Retour',season:'Saison',episode:'Épisode',ratings:'Avis et commentaires',writeComment:'Écrire un commentaire...',send:'Envoyer',settingsX:'',c_trending:'Films tendance',c_top:'Les mieux notés',c_retro:'Classiques',c_action:'Action',c_scifi:'Science-fiction',c_drama:'Drame et mystère',c_tv:'Séries populaires',c_anime:'Animation',tabLook:'Apparence',tabPlay:'Lecture et affichage',tabAcc:'Comptes et langue',tabData:'Données',accent:"Couleur d'accent",apply:'Appliquer',reset:'Réinitialiser',language:'Langue',profiles:'Profils',save:'Enregistrer',cancel:'Annuler',closePlayer:'Fermer',sizeS:'Petit',sizeM:'Normal',sizeL:'Grand',sizeXL:'Très grand',watchlistX:''},
- de:{whowatch:'Wer schaut zu?',addProfile:'Profil hinzufügen',settings:'Einstellungen',enterPin:'PIN eingeben',login:'Weiter',switchProfile:'Profil wechseln',wrongPin:'Falsche PIN',search:'Filme oder Serien suchen...',watchNow:'Jetzt ansehen',continueWatching:'Weiterschauen',watchlist:'Meine Liste',backHome:'Zur Startseite',back:'Zurück',season:'Staffel',episode:'Folge',ratings:'Bewertungen & Kommentare',writeComment:'Kommentar schreiben...',send:'Senden',c_trending:'Trend-Filme',c_top:'Bestbewertet',c_retro:'Klassiker',c_action:'Action',c_scifi:'Sci-Fi & Fantasy',c_drama:'Drama & Mystery',c_tv:'Beliebte Serien',c_anime:'Anime & Animation',tabLook:'Aussehen',tabPlay:'Wiedergabe & Anzeige',tabAcc:'Konten & Sprache',tabData:'Daten',accent:'Akzentfarbe',apply:'Anwenden',reset:'Zurücksetzen',language:'Sprache',profiles:'Profile',save:'Speichern',cancel:'Abbrechen',closePlayer:'Schließen',sizeS:'Klein',sizeM:'Normal',sizeL:'Groß',sizeXL:'Sehr groß'}
+  newProfile:'New profile',editProfile:'Edit profile',userName:'Username',pinOptional:'PIN (optional)',save:'Save',cancel:'Cancel',edit:'Edit',changePin:'Change PIN',main:'Main',noPass:'No PIN',nameReq:'Please enter a name',confirmDel:'Delete this profile?',confirmClear:'Are you sure?',curPin:'Enter current PIN (empty if none):',newPin:'Enter new PIN (empty = no PIN):',emojiPh:'Type an emoji 🦁',urlPh:'Image URL https://...',loadFail:'Failed to load. Check your connection.',netTip:'If your ISP blocks TMDB, try a VPN, change DNS (1.1.1.1), or set a proxy in Settings > Data.',net:'Connection (TMDB proxy)',netHint:'Optional: proxy address if TMDB is blocked on your network',c_d20:'2020s movies',c_d10:'2010s movies',c_d00:'2000s movies',c_d90:'90s movies',c_d80:'80s movies',c_tvnew:'Recent shows (2015+)',c_tvold:'Classic shows (1980–2009)',explore:'Explore',movies:'Movies',series:'TV shows',allYears:'All years (since 1980)',allGenres:'All genres',popular:'Most popular',topRated:'Top rated',newest:'Newest',trailer:'Trailer',noTrailer:'No trailer found for this title',whereToWatch:'Available on',noProviders:'Not on official platforms in your region (per JustWatch)',region:'Region (official platforms)',playHint:'If you see “Media not found”, this title is not available on this server. Try another server, or use the trailer / official platforms on the details page.',retry:'Retry',done:'Done',shoofaflamTitle:'ShoofAflam (Arabic)'},
+ fr:{whowatch:'Qui regarde ?',addProfile:'Ajouter un profil',settings:'Paramètres',enterPin:'Entrez votre code PIN',login:'Entrer',switchProfile:'Changer de profil',wrongPin:'PIN incorrect',search:'Rechercher un film ou une série...',watchNow:'Regarder',continueWatching:'Continuer',watchlist:'Ma liste',backHome:"Retour à l'accueil",back:'Retour',season:'Saison',episode:'Épisode',ratings:'Avis et commentaires',writeComment:'Écrire un commentaire...',send:'Envoyer',settingsX:'',c_trending:'Films tendance',c_top:'Les mieux notés',c_retro:'Classiques',c_action:'Action',c_scifi:'Science-fiction',c_drama:'Drame et mystère',c_tv:'Séries populaires',c_anime:'Animation',tabLook:'Apparence',tabPlay:'Lecture et affichage',tabAcc:'Comptes et langue',tabData:'Données',accent:"Couleur d'accent",apply:'Appliquer',reset:'Réinitialiser',language:'Langue',profiles:'Profils',save:'Enregistrer',cancel:'Annuler',closePlayer:'Fermer',sizeS:'Petit',sizeM:'Normal',sizeL:'Grand',sizeXL:'Très grand',watchlistX:'',shoofaflamTitle:'ShoofAflam (Arabe)',c_ar_movies:'Films arabes',c_ar_tv:'Séries arabes',c_ar_ma:'Films marocains'},
+ de:{whowatch:'Wer schaut zu?',addProfile:'Profil hinzufügen',settings:'Einstellungen',enterPin:'PIN eingeben',login:'Weiter',switchProfile:'Profil wechseln',wrongPin:'Falsche PIN',search:'Filme oder Serien suchen...',watchNow:'Jetzt ansehen',continueWatching:'Weiterschauen',watchlist:'Meine Liste',backHome:'Zur Startseite',back:'Zurück',season:'Staffel',episode:'Folge',ratings:'Bewertungen & Kommentare',writeComment:'Kommentar schreiben...',send:'Senden',c_trending:'Trend-Filme',c_top:'Bestbewertet',c_retro:'Klassiker',c_action:'Action',c_scifi:'Sci-Fi & Fantasy',c_drama:'Drama & Mystery',c_tv:'Beliebte Serien',c_anime:'Anime & Animation',tabLook:'Aussehen',tabPlay:'Wiedergabe & Anzeige',tabAcc:'Konten & Sprache',tabData:'Daten',accent:'Akzentfarbe',apply:'Anwenden',reset:'Zurücksetzen',language:'Sprache',profiles:'Profile',save:'Speichern',cancel:'Abbrechen',closePlayer:'Schließen',sizeS:'Klein',sizeM:'Normal',sizeL:'Groß',sizeXL:'Sehr groß',shoofaflamTitle:'ShoofAflam (Arabisch)',c_ar_movies:'Arabische Filme',c_ar_tv:'Arabische Serien',c_ar_ma:'Marokkanische Filme'}
 };
 let lang = load('flow2_lang', 'ar');
 const t = k => {
@@ -490,7 +498,6 @@ async function tmdb(path, params, bare){
   if(!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
-// tries full request; on failure retries with minimal params so a row never stays empty for a fancy filter
 async function tmdbSafe(path, params){
   try{ return await tmdb(path, params, false); }
   catch(e){
@@ -498,6 +505,11 @@ async function tmdbSafe(path, params){
     try{ return await tmdb(path, {}, true); }
     catch(e2){ lastErr = String((e2 && e2.message) || e2); throw e2; }
   }
+}
+async function shoofFetch(endpoint){
+  const r = await fetchT(SHOOFAFLAM_API + endpoint, 15000);
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
 }
 
 /* ============ STATE ============ */
@@ -513,8 +525,8 @@ profiles.forEach((p, i) => {
 save('flow_profiles', profiles);
 let me = null, pendingUser = null, settings = { ...DEFAULTS };
 let catalog = [], catalogReady = false, catalogFailed = false, catalogLoading = false;
-const itemMap = {};           // key -> item
-let current = null;           // item shown in details
+const itemMap = {};           
+let current = null;           
 let heroItems = [], heroIdx = 0, heroTimer = null, searchMode = false, editingId = null;
 const seasonCache = {};
 let backTo = 'main-screen', lastCardKey = '', rowsDirty = false;
@@ -653,6 +665,7 @@ function delProfile(id){
 const DEC = (a, b) => ({ 'primary_release_date.gte': a + '-01-01', 'primary_release_date.lte': b + '-12-31', sort_by:'popularity.desc', 'vote_count.gte':200 });
 const ROWS = [
   { k:'c_trending', type:'movie',  path:'/trending/movie/week', p:{} },
+  { k:'c_ar_movies', type:'shoofaflam_movies', path:'shoof', p:{} }, 
   { k:'c_top',      type:'movie',  path:'/discover/movie', p:{ sort_by:'vote_average.desc', 'vote_count.gte':5000 } },
   { k:'c_d20',      type:'movie',  path:'/discover/movie', p:DEC(2020, new Date().getFullYear()) },
   { k:'c_d10',      type:'movie',  path:'/discover/movie', p:DEC(2010, 2019) },
@@ -663,19 +676,37 @@ const ROWS = [
   { k:'c_scifi',    type:'movie',  path:'/discover/movie', p:{ with_genres:'878', sort_by:'popularity.desc', 'primary_release_date.gte':'1980-01-01' } },
   { k:'c_drama',    type:'movie',  path:'/discover/movie', p:{ with_genres:'18|9648', sort_by:'popularity.desc', 'primary_release_date.gte':'1980-01-01' } },
   { k:'c_tv',       type:'series', path:'/tv/popular', p:{} },
+  { k:'c_ar_tv',    type:'shoofaflam_tv', path:'shoof', p:{} }, 
   { k:'c_tvnew',    type:'series', path:'/discover/tv', p:{ 'first_air_date.gte':'2015-01-01', sort_by:'popularity.desc', 'vote_count.gte':100 } },
   { k:'c_tvold',    type:'series', path:'/discover/tv', p:{ 'first_air_date.gte':'1980-01-01', 'first_air_date.lte':'2009-12-31', sort_by:'popularity.desc', 'vote_count.gte':100 } },
   { k:'c_anime',    type:'series', path:'/discover/tv', p:{ with_genres:'16', with_original_language:'ja', sort_by:'popularity.desc' } }
 ];
+
 function mapItem(r, type){
   const it = {
     key: `${type}_${r.id}`, id: r.id, type,
-    title: r.title || r.name || '', year: (r.release_date || r.first_air_date || '').slice(0,4) || '—',
-    rating: r.vote_average ? r.vote_average.toFixed(1) : '—',
-    poster: r.poster_path || '', backdrop: r.backdrop_path || '', desc: r.overview || ''
+    title: r.title || r.name || r.title_ar || '', year: (r.release_date || r.first_air_date || r.year || '').slice(0,4) || '—',
+    rating: r.vote_average ? r.vote_average.toFixed(1) : (r.rating || '—'),
+    poster: r.poster_path || r.poster_path || '', backdrop: r.backdrop_path || r.poster_path || '', desc: r.overview || '',
+    slug: r.slug || null 
   };
   return it;
 }
+
+async function fetchShoof(type){
+  try{
+    const d = await shoofFetch('/titles.json');
+    let items = d.titles || d || [];
+    items = items.filter(it => (type === 'movie' ? it.type === 'movie' : it.type === 'series'));
+    return items.map(r => ({
+      key: `shoof_${r.slug}`, id: r.slug, type: type === 'movie' ? 'movie' : 'series',
+      title: r.title_ar || r.title_en, year: r.year || '—', rating: r.rating || '—',
+      poster: r.poster_path || '', backdrop: r.poster_path || '', desc: '',
+      slug: r.slug, provider: 'shoofaflam'
+    })).slice(0, 20);
+  }catch(e){ return []; }
+}
+
 function ensureCatalog(){
   catalogFailed = false;
   const ck = `flow2_cat_v2_${lang}`, cached = load(ck, null);
@@ -694,10 +725,16 @@ function ensureCatalog(){
     save(ck, { t: Date.now(), rows }); onCatalog();
   };
   ROWS.forEach((row, i) => {
-    tmdbSafe(row.path, row.p).then(d => {
-      const items = (d.results || []).map(r => mapItem(r, row.type)).filter(it => it.poster).slice(0, 20);
-      if(items.length) out[i] = { k: row.k, items };
-    }).catch(() => {}).then(() => { if(--pending === 0) finish(); });
+    if(row.type === 'shoofaflam_movies' || row.type === 'shoofaflam_tv'){
+      fetchShoof(row.type === 'shoofaflam_movies' ? 'movie' : 'series').then(items => {
+        if(items.length) out[i] = { k: row.k, items };
+      }).catch(() => {}).then(() => { if(--pending === 0) finish(); });
+    } else {
+      tmdbSafe(row.path, row.p).then(d => {
+        const items = (d.results || []).map(r => mapItem(r, row.type)).filter(it => it.poster).slice(0, 20);
+        if(items.length) out[i] = { k: row.k, items };
+      }).catch(() => {}).then(() => { if(--pending === 0) finish(); });
+    }
   });
 }
 function onCatalog(){
@@ -780,19 +817,24 @@ async function loadMore(k, sentinel){
   const st = rowState[k] || (rowState[k] = { page:1, loading:false, done:false });
   if(st.loading || st.done) return;
   st.loading = true;
+  
   try{
-    const d = await tmdb(cfg.path, Object.assign({}, cfg.p, { page: st.page + 1 }));
-    st.page++;
-    const have = {}; row.items.forEach(i => { have[i.key] = 1; });
-    const fresh = (d.results || []).map(r => mapItem(r, cfg.type)).filter(it => it.poster && !have[it.key]);
-    fresh.forEach(it => { reg(it); row.items.push(it); });
-    if(sentinel && sentinel.parentNode && fresh.length){
-      const tmp = document.createElement('div'); tmp.innerHTML = fresh.map(cardHTML).join('');
-      while(tmp.firstChild) sentinel.parentNode.insertBefore(tmp.firstChild, sentinel);
+    if(cfg.type === 'shoofaflam_movies' || cfg.type === 'shoofaflam_tv'){
+        st.done = true; 
+    } else {
+        const d = await tmdb(cfg.path, Object.assign({}, cfg.p, { page: st.page + 1 }));
+        st.page++;
+        const have = {}; row.items.forEach(i => { have[i.key] = 1; });
+        const fresh = (d.results || []).map(r => mapItem(r, cfg.type)).filter(it => it.poster && !have[it.key]);
+        fresh.forEach(it => { reg(it); row.items.push(it); });
+        if(sentinel && sentinel.parentNode && fresh.length){
+          const tmp = document.createElement('div'); tmp.innerHTML = fresh.map(cardHTML).join('');
+          while(tmp.firstChild) sentinel.parentNode.insertBefore(tmp.firstChild, sentinel);
+        }
+        if(st.page >= Math.min(d.total_pages || 1, 25) || !(d.results || []).length){
+          st.done = true; if(sentinel){ if(io) io.unobserve(sentinel); sentinel.remove(); }
+        } else if(sentinel && io){ io.unobserve(sentinel); io.observe(sentinel); }
     }
-    if(st.page >= Math.min(d.total_pages || 1, 25) || !(d.results || []).length){
-      st.done = true; if(sentinel){ if(io) io.unobserve(sentinel); sentinel.remove(); }
-    } else if(sentinel && io){ io.unobserve(sentinel); io.observe(sentinel); }
   }catch(e){ st.done = true; }
   st.loading = false;
 }
@@ -887,7 +929,7 @@ function openItem(key){
   current = it; stopHero();
   const st = load(statusKey(key), '');
   $('det-card').innerHTML = `
-    ${it.backdrop ? `<img class="det-bd" src="${IMG}/w780${it.backdrop}" alt="" decoding="async">` : ''}
+    ${it.backdrop ? `<img class="det-bd" src="${posterUrl(it)}" alt="" decoding="async">` : ''}
     <div class="det-in">
       <img class="det-poster" src="${posterUrl(it)}" alt="">
       <div class="det-info">
@@ -907,7 +949,7 @@ function openItem(key){
     </div>`;
   updateDetBtns(); loadProviders(it);
   const area = $('series-area');
-  if(it.type === 'series'){ area.style.display = ''; loadSeasons(it); } else area.style.display = 'none';
+  if(it.type === 'series' && it.provider !== 'shoofaflam'){ area.style.display = ''; loadSeasons(it); } else area.style.display = 'none';
   renderComments(); showScreen('details-screen');
 }
 function updateDetBtns(){
@@ -951,6 +993,7 @@ function playCurrent(){
 async function loadProviders(it){
   const box = $('providers'); if(!box) return;
   box.innerHTML = '';
+  if(it.provider === 'shoofaflam'){ box.innerHTML = `<span style="color:var(--accent)">${t('shoofaflamTitle')}</span>`; return; }
   try{
     const d = await tmdb('/' + (it.type === 'series' ? 'tv' : 'movie') + '/' + it.id + '/watch/providers', {});
     if(!current || current.key !== it.key) return;
@@ -964,6 +1007,7 @@ async function loadProviders(it){
 }
 async function openTrailer(){
   if(!current) return;
+  if(current.provider === 'shoofaflam'){ alert(t('noTrailer')); return; }
   const it = current;
   try{
     const d = await tmdb('/' + (it.type === 'series' ? 'tv' : 'movie') + '/' + it.id + '/videos', { include_video_language: [lang, 'en', 'null'].join(',') });
@@ -971,7 +1015,7 @@ async function openTrailer(){
     const v = vids.find(x => x.type === 'Trailer' && x.official) || vids.find(x => x.type === 'Trailer') || vids[0];
     if(!v){ alert(t('noTrailer')); return; }
     $('p-title').textContent = it.title + ' · ' + t('trailer');
-    $('p-servers').innerHTML = ''; $('p-hint').textContent = ''; playerCtx = null;
+    $('p-servers').style.display = 'none'; $('p-hint').textContent = ''; playerCtx = null;
     $('p-frame').src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.key) + '?autoplay=1&rel=0';
     $('player').classList.add('active');
   }catch(e){ alert(t('loadFail')); }
@@ -998,21 +1042,38 @@ function addComment(){
 
 /* ============ PLAYER ============ */
 let playerCtx = null;
-function srcFor(srv, it, s, e){ return it.type === 'movie' ? srv.movie(it.id) : srv.tv(it.id, s, e); }
+function srcFor(srv, it, s, e){
+  if(!srv) return 'about:blank';
+  if(srv.id === 'shoofaflam'){
+    return `https://shoofaflam.tv/embed/${it.slug}`;
+  }
+  return it.type === 'movie' ? srv.movie(it.id) : srv.tv(it.id, s, e);
+}
+
 function openPlayer(it, s, e){
   playerCtx = { it, s, e };
   pushHistory(it);
-  if(it.type === 'series'){ save(K('last') + '_' + it.key, { s, e }); }
-  $('p-title').textContent = it.type === 'series' ? `${it.title} · S${s}E${e}` : it.title;
+  if(it.type === 'series' && it.provider !== 'shoofaflam'){ save(K('last') + '_' + it.key, { s, e }); }
+  
+  $('p-title').textContent = it.type === 'series' && it.provider !== 'shoofaflam' ? `${it.title} · S${s}E${e}` : it.title;
   $('p-hint').textContent = t('playHint');
-  const start = Math.max(0, SERVERS.findIndex(x => x.id === settings.server));
-  $('p-servers').innerHTML = SERVERS.map((sv, i) => `<button class="btn ghost sm focusable${i===start?' on':''}" data-act="server" data-i="${i}" style="${i===start?'border-color:var(--accent)':''}">${sv.name}</button>`).join('');
-  $('p-frame').src = srcFor(SERVERS[start], it, s, e);
+  
+  const isArabic = (it.provider === 'shoofaflam');
+  const availableServers = SERVERS.filter(sv => isArabic ? sv.id === 'shoofaflam' : sv.id !== 'shoofaflam');
+  
+  let start = availableServers.findIndex(x => x.id === settings.server);
+  if(start === -1) start = 0; 
+  
+  $('p-servers').style.display = '';
+  $('p-server-select').innerHTML = availableServers.map((sv, i) => '<option value="' + sv.id + '">' + esc(sv.name) + '</option>').join('');
+  $('p-server-select').value = availableServers[start].id;
+  
+  $('p-frame').src = srcFor(availableServers[start], it, s, e);
   $('player').classList.add('active');
 }
 function closePlayer(){
   $('p-frame').src = 'about:blank'; $('player').classList.remove('active');
-  if(current && activeScreen() === 'details-screen'){ updateDetBtns(); if(current.type === 'series'){ const n = document.querySelector('#seasons .chip.on'); if(n) selectSeason(+n.dataset.n); } }
+  if(current && activeScreen() === 'details-screen'){ updateDetBtns(); if(current.type === 'series' && current.provider !== 'shoofaflam'){ const n = document.querySelector('#seasons .chip.on'); if(n) selectSeason(+n.dataset.n); } }
   if(activeScreen() === 'main-screen') renderRows();
 }
 
@@ -1064,11 +1125,6 @@ const actions = {
   season: el => selectSeason(+el.dataset.n),
   ep: el => openPlayer(current, +el.dataset.s, +el.dataset.e),
   addComment, delCmt: el => { if(!confirm(t('confirmDel'))) return; save(cmtKey(current.key), load(cmtKey(current.key), []).filter(c => c.id !== +el.dataset.id)); renderComments(); },
-  server: el => {
-    const i = +el.dataset.i, { it, s, e } = playerCtx;
-    document.querySelectorAll('#p-servers .btn').forEach((b, j) => { b.classList.toggle('on', j === i); b.style.borderColor = j === i ? 'var(--accent)' : ''; });
-    $('p-frame').src = srcFor(SERVERS[i], it, s, e);
-  },
   closePlayer,
   tab: el => {
     document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === el));
@@ -1105,6 +1161,12 @@ $('font').addEventListener('change', e => { settings.font = +e.target.value; sav
 $('card').addEventListener('change', e => { settings.card = +e.target.value; saveSettings(); applySettings(); });
 $('server').addEventListener('change', e => { settings.server = e.target.value; saveSettings(); });
 $('region').addEventListener('change', e => { settings.region = e.target.value; saveSettings(); });
+$('p-server-select').addEventListener('change', e => {
+  if(!playerCtx) return;
+  const sv = SERVERS.find(x => x.id === e.target.value); 
+  if(!sv) return;
+  $('p-frame').src = srcFor(sv, playerCtx.it, playerCtx.s, playerCtx.e);
+});
 $('ex-type').addEventListener('change', () => { exGenres(); exLoad(true); });
 ['ex-dec','ex-genre','ex-sort'].forEach(id => $(id).addEventListener('change', () => exLoad(true)));
 $('lang').addEventListener('change', e => {
@@ -1169,8 +1231,8 @@ tick(); setInterval(tick, 30000);
 /* ============ BOOT ============ */
 applyLang();
 loadSettings();
-showProfiles();      // show immediately, never wait for the network
-ensureCatalog();     // prefetch in background (uses cache when fresh)
+showProfiles();      
+ensureCatalog();     
 </script>
 </body>
 </html>
