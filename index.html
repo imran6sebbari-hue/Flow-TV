@@ -514,7 +514,7 @@ async function shoofFetch(endpoint){
 
 /* ============ STATE ============ */
 let profiles = load('flow_profiles', null);
-if(!Array.isArray(profiles) || !profiles.length) profiles = [{ id:1, name:'عمران', avatar:'🦁', isUrl:false, pin:'', permanent:true }];
+if(!Array.isArray(profiles) || !profiles.length) profiles = [];
 profiles.forEach((p, i) => {
   if(p.id === undefined || p.id === null) p.id = Date.now() + i;
   p.name = p.name || 'User'; p.avatar = p.avatar || '👤';
@@ -1236,7 +1236,7 @@ tick(); setInterval(tick, 30000);
 /* ============ BOOT ============ */
 applyLang();
 loadSettings();
-login(profiles[0]);     
+showProfiles();
 ensureCatalog();     
 </script>
 </body>
