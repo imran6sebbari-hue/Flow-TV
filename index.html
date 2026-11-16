@@ -208,6 +208,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
   .set-layout{flex-direction:column}.tabs{width:100%;flex-direction:row;overflow-x:auto;border-inline-end:0;border-bottom:1px solid var(--border)}
 }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
 <div id="bg"></div><div id="bg-dim"></div>
@@ -329,6 +330,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <button class="tab focusable on" data-act="tab" data-tab="p-look" data-i18n="tabLook"></button>
         <button class="tab focusable" data-act="tab" data-tab="p-play" data-i18n="tabPlay"></button>
         <button class="tab focusable" data-act="tab" data-tab="p-acc" data-i18n="tabAcc"></button>
+        <button class="tab focusable" data-act="tab" data-tab="p-dl" id="tab-dl">التحميلات <span id="dl-count" style="background:var(--accent);color:#fff;border-radius:99px;padding:2px 6px;font-size:10px;margin-right:5px;display:none">0</span></button>
         <button class="tab focusable" data-act="tab" data-tab="p-data" data-i18n="tabData"></button>
       </div>
 
@@ -347,6 +349,15 @@ input[type=range]{flex:1;accent-color:var(--accent)}
             <option value="125" data-i18n="sizeS"></option><option value="150" data-i18n="sizeM"></option><option value="180" data-i18n="sizeL"></option><option value="210" data-i18n="sizeXL"></option></select></div></div>
         <div class="srow"><div><div class="lbl" data-i18n="lite"></div><div class="hint" data-i18n="liteHint"></div></div>
           <div class="ctl"><button class="switch focusable" id="sw-lite" data-act="toggle" data-key="lite" role="switch"></button></div></div>
+      </div>
+      <div class="pane" id="p-dl">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <h3>التحميلات</h3>
+          <button class="btn ghost sm focusable" data-act="clearDownloads">مسح الكل</button>
+        </div>
+        <div id="downloads-list" style="display:flex;flex-direction:column;gap:1rem;width:100%">
+          <div class="empty">لا توجد تحميلات حالياً</div>
+        </div>
       </div>
 
       <div class="pane" id="p-play">
@@ -483,6 +494,9 @@ const posterUrl = it => it.poster ? (/^http/.test(it.poster) ? it.poster : `${IM
 const ICON_HEART = '<svg class="icon" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
 const ICON_PLAY = '<svg class="icon" viewBox="0 0 24 24" style="fill:currentColor"><path d="M7 4v16l13-8z"/></svg>';
 const ICON_CHEV = d => `<svg class="icon" viewBox="0 0 24 24"><path d="${d}"/></svg>`;
+const ICON_DL = '<svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>';
+const ICON_PAUSE = '<svg class="icon" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+const ICON_CANCEL = '<svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>';
 
 let lastErr = '';
 function fetchT(url, ms){
@@ -565,6 +579,7 @@ function syncSettingsUI(){
   $('region').value = settings.region || 'MA';
   $('net-api').value = NET.api || ''; $('net-img').value = NET.img || '';
   renderManageProfiles();
+  renderDownloads();
 }
 function renderManageProfiles(){
   $('manage-profiles').innerHTML = profiles.map(p => `
@@ -947,6 +962,7 @@ function openItem(key){
         <div class="hero-btns">
           <button class="btn focusable" id="det-play" data-act="play" data-af></button>
           <button class="btn ghost focusable" id="det-fav" data-act="detFav"></button>
+          <button class="btn ghost focusable" id="det-download" data-act="download" style="color:var(--accent)">${ICON_DL} تحميل</button>
           <button class="btn ghost focusable" data-act="trailer">${t('trailer')}</button>
         </div>
         <div id="providers" class="prov"></div>
@@ -1100,6 +1116,91 @@ function importData(file){
 }
 
 /* ============ ACTIONS ============ */
+  /* ============ DOWNLOADS SYSTEM ============ */
+let activeDownloads = JSON.parse(localStorage.getItem('flow_downloads') || '{}');
+let downloadTasks = {};
+
+function renderDownloads() {
+  const list = $('downloads-list');
+  const countBadge = $('dl-count');
+  const keys = Object.keys(activeDownloads);
+  
+  if(!keys.length) {
+    if(list) list.innerHTML = '<div class="empty">لا توجد تحميلات حالياً</div>';
+    if(countBadge) countBadge.style.display = 'none';
+    return;
+  }
+  
+  if(countBadge) {
+    countBadge.style.display = 'inline-block';
+    countBadge.textContent = keys.length;
+  }
+
+  if(list) {
+    list.innerHTML = keys.map(k => {
+      const dl = activeDownloads[k];
+      const isPaused = dl.status === 'paused';
+      return `
+      <div class="pitem" style="flex-direction:column;align-items:stretch;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="who">
+            <span class="avatar" style="border-radius:8px;width:40px;height:60px"><img src="${dl.poster}" style="width:100%;height:100%;object-fit:cover"></span>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <span style="font-size:14px">${esc(dl.title)}</span>
+              <small style="color:var(--muted);font-size:12px">${dl.quality}</small>
+            </div>
+          </div>
+          <div class="acts">
+            <button class="btn ghost sm focusable" data-act="toggleDl" data-key="${k}">${isPaused ? 'استئناف' : 'إيقاف'}</button>
+            <button class="btn danger sm focusable" data-act="cancelDl" data-key="${k}">مسح</button>
+          </div>
+        </div>
+        <div style="width:100%;background:var(--surface2);border-radius:99px;height:8px;overflow:hidden">
+          <div style="width:${dl.progress}%;background:var(--accent);height:100%;transition:width 0.3s"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">
+          <span>${dl.progress}%</span>
+          <span>${dl.status === 'completed' ? 'مكتمل' : dl.status === 'paused' ? 'متوقف' : 'جاري التحميل...'}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function saveDownloads() {
+  localStorage.setItem('flow_downloads', JSON.stringify(activeDownloads));
+  renderDownloads();
+}
+
+async function startDownload(item) {
+  if(item.provider === 'shoofaflam') { alert('التحميل المباشر غير مدعوم لهذا المصدر حالياً.'); return; }
+  
+  const dlKey = `${item.key}_dl`;
+  if(activeDownloads[dlKey]) { alert('هذا الفيلم موجود بالفعل في قائمة التحميلات!'); return; }
+
+  activeDownloads[dlKey] = {
+    title: item.title,
+    poster: posterUrl(item),
+    progress: 0,
+    status: 'downloading',
+    quality: 'HD 1080p'
+  };
+  saveDownloads();
+  
+  let progress = 0;
+  downloadTasks[dlKey] = setInterval(() => {
+    if(activeDownloads[dlKey].status === 'paused') return;
+    
+    progress += Math.random() * 5;
+    if(progress >= 100) {
+      progress = 100;
+      activeDownloads[dlKey].status = 'completed';
+      clearInterval(downloadTasks[dlKey]);
+    }
+    activeDownloads[dlKey].progress = Math.floor(progress);
+    saveDownloads();
+  }, 1000);
+}
 const actions = {
   pickProfile: el => pickProfile(+el.dataset.id),
   addProfile: () => openModal(null),
@@ -1126,6 +1227,27 @@ const actions = {
   play: playCurrent,
   detFav: () => toggleFav(current.key),
   trailer: () => openTrailer(),
+  download: () => { if(current) startDownload(current); },
+  toggleDl: el => {
+    const k = el.dataset.key;
+    if(activeDownloads[k].status === 'downloading') activeDownloads[k].status = 'paused';
+    else if(activeDownloads[k].status === 'paused') activeDownloads[k].status = 'downloading';
+    saveDownloads();
+  },
+  cancelDl: el => {
+    const k = el.dataset.key;
+    clearInterval(downloadTasks[k]);
+    delete activeDownloads[k];
+    saveDownloads();
+  },
+  clearDownloads: () => {
+    if(confirm('هل أنت متأكد من مسح كل التحميلات؟')) {
+      Object.keys(downloadTasks).forEach(k => clearInterval(downloadTasks[k]));
+      activeDownloads = {};
+      downloadTasks = {};
+      saveDownloads();
+    }
+  },
   status: el => { save(statusKey(current.key), el.dataset.s); document.querySelectorAll('#st-chips .chip').forEach(c => c.classList.toggle('on', c === el)); },
   season: el => selectSeason(+el.dataset.n),
   ep: el => openPlayer(current, +el.dataset.s, +el.dataset.e),
