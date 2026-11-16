@@ -156,6 +156,7 @@ img{display:block}
 .prov img{width:20px;height:20px;border-radius:5px}
 .attr{color:var(--muted);font-size:.75rem;text-align:center;margin-top:2rem;line-height:1.6}
 .p-hint{flex-basis:100%;color:var(--muted);font-size:.8rem}
+
 /* settings */
 .set{padding:1.5rem 2rem;max-width:70rem;margin:0 auto}
 .set-layout{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;min-height:32rem}
@@ -211,6 +212,12 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 </head>
 <body>
 <div id="bg"></div><div id="bg-dim"></div>
+
+<!-- Watermark -->
+<a href="https://instagram.com/imrvvvan_prv" target="_blank" style="position:fixed;bottom:15px;left:15px;z-index:9999;background:rgba(0,0,0,0.6);color:#fff;padding:8px 12px;border-radius:20px;font-size:14px;font-weight:bold;text-decoration:none;backdrop-filter:blur(5px);display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.2)">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+  @imrvvvan_prv
+</a>
 
 <!-- Profiles -->
 <div id="profiles-screen" class="screen center">
@@ -1059,7 +1066,7 @@ function addComment(){
   save(cmtKey(current.key), list); $('cmt-text').value = ''; renderComments();
 }
 
-/* ============ DOWNLOAD SYSTEM ============ */
+/* ============ DOWNLOAD MODAL ============ */
 function openDownloadModal(item) {
   if(item.provider === 'shoofaflam') {
     alert('التحميل غير مدعوم لهذا المصدر حالياً.');
@@ -1068,14 +1075,10 @@ function openDownloadModal(item) {
   
   $('dl-modal-title').textContent = item.title;
   
-  // هنا كنستعملو سيرفرات خارجية كتوفر التحميل
-  const url1080 = `https://vidsrc.to/embed/movie/${item.id}`; 
-  const url720 = `https://vidsrc.to/embed/movie/${item.id}`;
-  const url480 = `https://vidsrc.to/embed/movie/${item.id}`;
-
-  $('dl-link-1080').href = url1080;
-  $('dl-link-720').href = url720;
-  $('dl-link-480').href = url480;
+  const url = `https://vidsrc.to/embed/movie/${item.id}`; 
+  $('dl-link-1080').href = url;
+  $('dl-link-720').href = url;
+  $('dl-link-480').href = url;
 
   $('dl-modal').style.display = 'flex';
 }
@@ -1099,4 +1102,182 @@ function openPlayer(it, s, e){
   $('p-hint').textContent = t('playHint');
   
   const isArabic = (it.provider === 'shoofaflam');
-  const availableServers = SERVERS.filter(s
+  const availableServers = SERVERS.filter(sv => isArabic ? sv.id === 'shoofaflam' : sv.id !== 'shoofaflam');
+  
+  let start = availableServers.findIndex(x => x.id === settings.server);
+  if(start === -1) start = 0; 
+  
+  $('p-servers').style.display = '';
+  $('p-server-select').innerHTML = availableServers.map((sv, i) => '<option value="' + sv.id + '">' + esc(sv.name) + '</option>').join('');
+  $('p-server-select').value = availableServers[start].id;
+  
+  $('p-frame').src = srcFor(availableServers[start], it, s, e);
+  $('player').classList.add('active');
+}
+function closePlayer(){
+  $('p-frame').src = 'about:blank'; $('player').classList.remove('active');
+  if(current && activeScreen() === 'details-screen'){ updateDetBtns(); if(current.type === 'series' && current.provider !== 'shoofaflam'){ const n = document.querySelector('#seasons .chip.on'); if(n) selectSeason(+n.dataset.n); } }
+  if(activeScreen() === 'main-screen') renderRows();
+}
+
+/* ============ DATA ============ */
+function exportData(){
+  const out = {};
+  for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(k.startsWith('flow')) out[k] = localStorage.getItem(k); }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type:'application/json' }));
+  a.download = 'flow-tv-backup.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function importData(file){
+  const r = new FileReader();
+  r.onload = () => {
+    try{ const d = JSON.parse(r.result); Object.keys(d).forEach(k => { if(k.startsWith('flow') && !k.startsWith('flow2_cat_')) localStorage.setItem(k, d[k]); }); location.reload(); }
+    catch{ alert('Invalid file'); }
+  };
+  r.readAsText(file);
+}
+
+/* ============ ACTIONS ============ */
+const actions = {
+  pickProfile: el => pickProfile(+el.dataset.id),
+  addProfile: () => openModal(null),
+  editProfile: el => openModal(+el.dataset.id),
+  saveProfile, closeModal, verifyPin, showProfiles,
+  changePin: el => changePin(+el.dataset.id),
+  delProfile: el => delProfile(+el.dataset.id),
+  openSettings: () => { syncSettingsUI(); showScreen('settings-screen'); },
+  backFromSettings: () => { if(me){ showScreen('main-screen'); renderMain(); } else showProfiles(); },
+  goMain: () => { showScreen('main-screen', true); refreshRowsIfDirty(); setupHeroTimer(); },
+  goBack: () => {
+    showScreen(backTo, true);
+    if(backTo === 'main-screen'){ refreshRowsIfDirty(); setupHeroTimer(); }
+    setTimeout(() => { const c = document.querySelector('#' + backTo + ' .card[data-key="' + lastCardKey + '"]'); if(c) c.focus({ preventScroll:true }); }, 80);
+  },
+  openExplore: () => {
+    showScreen('explore-screen', true);
+    if(!ex.inited){ ex.inited = true; if('IntersectionObserver' in window){ exIO = new IntersectionObserver(es => { if(es[0].isIntersecting && activeScreen() === 'explore-screen') exLoad(false); }, { rootMargin:'0px 0px 800px 0px' }); exIO.observe($('ex-more')); } exGenres(); exLoad(true); }
+  },
+  openItem: el => openItem(el.dataset.key),
+  random: () => { const all = []; catalog.forEach(r => all.push(...r.items)); if(all.length) openItem(all[Math.floor(Math.random() * all.length)].key); },
+  heroTo: el => setHero(+el.dataset.i, false),
+  retry: () => ensureCatalog(),
+  play: playCurrent,
+  detFav: () => toggleFav(current.key),
+  trailer: () => openTrailer(),
+  download: () => { if(current) openDownloadModal(current); },
+  status: el => { save(statusKey(current.key), el.dataset.s); document.querySelectorAll('#st-chips .chip').forEach(c => c.classList.toggle('on', c === el)); },
+  season: el => selectSeason(+el.dataset.n),
+  ep: el => openPlayer(current, +el.dataset.s, +el.dataset.e),
+  addComment, delCmt: el => { if(!confirm(t('confirmDel'))) return; save(cmtKey(current.key), load(cmtKey(current.key), []).filter(c => c.id !== +el.dataset.id)); renderComments(); },
+  closePlayer,
+  tab: el => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === el));
+    document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === el.dataset.tab));
+  },
+  accent: el => { settings.accent = el.dataset.c; saveSettings(); applySettings(); syncSettingsUI(); },
+  applyBg: () => { settings.bg = $('bg-url').value.trim(); saveSettings(); applySettings(); },
+  resetBg: () => { settings.bg = ''; $('bg-url').value = ''; saveSettings(); applySettings(); },
+  toggle: el => { const k = el.dataset.key; settings[k] = !settings[k]; saveSettings(); applySettings(); syncSettingsUI(); if(k === 'showHistory') renderRows(); },
+  clearHistory: () => { if(me && confirm(t('confirmClear'))){ del(K('hist')); } },
+  clearFavs: () => { if(me && confirm(t('confirmClear'))){ del(K('favs')); } },
+  resetSettings: () => { if(confirm(t('confirmClear'))){ del(K('set')); loadSettings(); syncSettingsUI(); } },
+  saveNet: () => { save('flow2_net', { api: $('net-api').value.trim(), img: $('net-img').value.trim() }); Object.keys(localStorage).filter(k => k.indexOf('flow2_cat_') === 0).forEach(k => del(k)); location.reload(); },
+  resetNet: () => { del('flow2_net'); Object.keys(localStorage).filter(k => k.indexOf('flow2_cat_') === 0).forEach(k => del(k)); location.reload(); },
+  exportData, importData: () => $('import-file').click()
+};
+
+document.addEventListener('click', e => {
+  const rs = e.target.closest('[data-scroll]');
+  if(rs){ const tr = rs.closest('.row').querySelector('.track'); const rtl = document.documentElement.dir === 'rtl'; tr.scrollBy({ left: (+rs.dataset.scroll) * (rtl ? -1 : 1) * tr.clientWidth * 0.85 }); return; }
+  const fav = e.target.closest('[data-fav]'); if(fav){ e.stopPropagation(); toggleFav(fav.dataset.fav); return; }
+  const act = e.target.closest('[data-act]'); if(act){ const fn = actions[act.dataset.act]; if(fn) fn(act, e); return; }
+  const card = e.target.closest('.card[data-key]'); if(card) openItem(card.dataset.key);
+});
+
+/* inputs */
+$('search-input').addEventListener('input', onSearchInput);
+$('pin-input').addEventListener('keydown', e => { if(e.key === 'Enter') verifyPin(); });
+$('cmt-text').addEventListener('keydown', e => { if(e.key === 'Enter') addComment(); });
+$('m-type').addEventListener('change', toggleAvatarPh);
+$('accent-custom').addEventListener('input', e => { settings.accent = e.target.value; saveSettings(); applySettings(); });
+$('dim').addEventListener('input', e => { settings.dim = +e.target.value; $('dim-val').textContent = Math.round(settings.dim * 100) + '%'; saveSettings(); applySettings(); });
+$('font').addEventListener('change', e => { settings.font = +e.target.value; saveSettings(); applySettings(); });
+$('card').addEventListener('change', e => { settings.card = +e.target.value; saveSettings(); applySettings(); });
+$('server').addEventListener('change', e => { settings.server = e.target.value; saveSettings(); });
+$('region').addEventListener('change', e => { settings.region = e.target.value; saveSettings(); });
+$('p-server-select').addEventListener('change', e => {
+  if(!playerCtx) return;
+  const sv = SERVERS.find(x => x.id === e.target.value); 
+  if(!sv) return;
+  $('p-frame').src = srcFor(sv, playerCtx.it, playerCtx.s, playerCtx.e);
+});
+$('ex-type').addEventListener('change', () => { exGenres(); exLoad(true); });
+['ex-dec','ex-genre','ex-sort'].forEach(id => $(id).addEventListener('change', () => exLoad(true)));
+$('lang').addEventListener('change', e => {
+  lang = e.target.value; save('flow2_lang', lang); applyLang(); syncSettingsUI();
+  ex.inited = false; $('ex-grid').innerHTML = ''; catalogReady = false; catalogLoading = false; catalog = []; if(me) ensureCatalog();
+});
+$('import-file').addEventListener('change', e => { if(e.target.files[0]) importData(e.target.files[0]); });
+
+/* image fallback */
+document.addEventListener('error', e => {
+  const im = e.target;
+  if(im.tagName === 'IMG' && !im.dataset.f){ im.dataset.f = 1; im.src = PLACEHOLDER; }
+}, true);
+
+/* keyboard: spatial navigation + back */
+document.addEventListener('keydown', e => {
+  const tag = (document.activeElement || {}).tagName;
+  const typing = tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA';
+  if(e.key === 'Escape' || (e.key === 'Backspace' && !typing)){
+    if($('player').classList.contains('active')) closePlayer();
+    else if($('modal').classList.contains('active')) closeModal();
+    else if(activeScreen() === 'details-screen') actions.goBack();
+    else if(activeScreen() === 'explore-screen') actions.goMain();
+    else if(activeScreen() === 'settings-screen') actions.backFromSettings();
+    return;
+  }
+  const cur = document.activeElement;
+  if((e.key === 'Enter' || e.key === ' ') && cur && cur.classList.contains('card')){ e.preventDefault(); cur.click(); return; }
+  if((e.key === 'f' || e.key === 'F') && cur && cur.classList.contains('card') && !typing){ toggleFav(cur.dataset.key); return; }
+
+  if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) return;
+  if(typing && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && tag !== 'SELECT') return;
+  if(tag === 'SELECT') return;
+  const scope = $('player').classList.contains('active') ? $('player') : $('modal').classList.contains('active') ? $('modal') : document.querySelector('.screen.active');
+  if(!scope) return;
+  if(!cur || !scope.contains(cur) || !cur.classList.contains('focusable')){ const f = scope.querySelector('.focusable'); if(f){ e.preventDefault(); f.focus(); } return; }
+  e.preventDefault();
+  const vh = innerHeight, list = Array.from(scope.querySelectorAll('.focusable')).filter(el => el !== cur && el.offsetParent !== null);
+  const r0 = cur.getBoundingClientRect(), cx = r0.left + r0.width / 2, cy = r0.top + r0.height / 2;
+  let best = null, bd = Infinity;
+  for(const el of list){
+    const r = el.getBoundingClientRect();
+    if(r.width === 0 || r.bottom < -vh || r.top > vh * 2) continue;
+    const dx = r.left + r.width / 2 - cx, dy = r.top + r.height / 2 - cy;
+    const sameRow = Math.abs(dy) < Math.max(r0.height, r.height) * 0.6;
+    let ok = false;
+    if(e.key === 'ArrowRight') ok = dx > 8 && sameRow;
+    else if(e.key === 'ArrowLeft') ok = dx < -8 && sameRow;
+    else if(e.key === 'ArrowDown') ok = dy > Math.min(r0.height, r.height) * 0.5;
+    else ok = dy < -Math.min(r0.height, r.height) * 0.5;
+    if(!ok) continue;
+    const d = (e.key === 'ArrowLeft' || e.key === 'ArrowRight') ? Math.abs(dx) + Math.abs(dy) * 3 : Math.abs(dy) + Math.abs(dx) * 2;
+    if(d < bd){ bd = d; best = el; }
+  }
+  if(best){ best.focus({ preventScroll:true }); best.scrollIntoView({ block:'nearest', inline:'nearest', behavior: settings.lite ? 'auto' : 'smooth' }); }
+});
+
+/* clock */
+function tick(){ $('clock').textContent = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+tick(); setInterval(tick, 30000);
+
+/* ============ BOOT ============ */
+applyLang();
+loadSettings();
+showProfiles();
+ensureCatalog();     
+</script>
+</body>
+</html>
+```
