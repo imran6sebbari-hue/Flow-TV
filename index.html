@@ -2,14 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Flow TV</title>
 <meta name="theme-color" content="#0b0b10">
+<link rel="manifest" href="site.webmanifest">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="manifest" href="site.webmanifest">
 <link rel="preconnect" href="https://image.tmdb.org">
 <link rel="preconnect" href="https://api.themoviedb.org">
 <style>
@@ -72,29 +72,34 @@ img{display:block}
 .search{flex:1;max-width:30rem;position:relative;margin-inline:auto}
 .search .input{border-radius:999px;padding-inline-start:2.6rem}
 .search svg{position:absolute;inset-inline-start:.95rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search-results{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:0 0 10px 10px;margin-top:5px;max-height:300px;overflow-y:auto;z-index:50;display:none;box-shadow:0 10px 20px rgba(0,0,0,0.5)}
+.search-results a{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--border);color:var(--text);text-decoration:none;transition:background 0.2s}
+.search-results a:hover{background:var(--surface2)}
+.search-results img{width:30px;height:45px;border-radius:4px;object-fit:cover}
 .nav-actions{display:flex;gap:.5rem;align-items:center}
 .pill{display:flex;align-items:center;gap:.5rem;background:var(--surface2);border:1px solid var(--border);padding:.5rem .9rem;border-radius:999px;font-size:.9rem;font-weight:600}
 .pill:hover{background:#262633}
 .pill .avatar{width:1.5rem;height:1.5rem;font-size:.9rem;border:0}
 .pill.sq{padding:.5rem .65rem}
 
-/* hero */
+/* hero & video */
 .wrap{padding:1.5rem 2rem 3rem}
 #hero{position:relative;height:clamp(300px,50vh,480px);border-radius:16px;overflow:hidden;background:var(--surface);margin-bottom:2rem}
-#hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .5s}
+#hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .5s;z-index:0}
 #hero-img.fade{opacity:0}
+#hero-video{position:absolute;top:50%;left:50%;width:100vw;height:100vh;transform:translate(-50%, -50%);object-fit:cover;pointer-events:none;z-index:0;display:none;opacity:0;transition:opacity 0.5s;}
 .hero-shade{position:absolute;inset:0;background:
   linear-gradient(to top,var(--bg) 4%,rgba(11,11,16,.2) 55%,transparent),
-  linear-gradient(to right,rgba(11,11,16,.9) 5%,transparent 65%)}
+  linear-gradient(to right,rgba(11,11,16,.9) 5%,transparent 65%);z-index:1}
 :root[dir=rtl] .hero-shade{background:
   linear-gradient(to top,var(--bg) 4%,rgba(11,11,16,.2) 55%,transparent),
   linear-gradient(to left,rgba(11,11,16,.9) 5%,transparent 65%)}
-.hero-body{position:absolute;inset-inline-start:0;bottom:0;padding:2rem 2.2rem;max-width:44rem;display:flex;flex-direction:column;gap:.7rem}
+.hero-body{position:absolute;inset-inline-start:0;bottom:0;padding:2rem 2.2rem;max-width:44rem;display:flex;flex-direction:column;gap:.7rem;z-index:2}
 .hero-meta{color:var(--accent);font-weight:700;font-size:.95rem}
 .hero-title{font-size:clamp(1.6rem,3.4vw,2.6rem);font-weight:800;line-height:1.15}
 .hero-desc{color:#cfcfd8;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:.95rem}
 .hero-btns{display:flex;gap:.7rem;margin-top:.4rem}
-.dots{position:absolute;inset-inline-end:1.5rem;bottom:1.2rem;display:flex;gap:.4rem}
+.dots{position:absolute;inset-inline-end:1.5rem;bottom:1.2rem;display:flex;gap:.4rem;z-index:2}
 .dot{width:.55rem;height:.55rem;border-radius:50%;background:rgba(255,255,255,.35);padding:0}
 .dot.on{background:var(--accent);width:1.4rem;border-radius:999px}
 
@@ -209,14 +214,19 @@ input[type=range]{flex:1;accent-color:var(--accent)}
   .set-layout{flex-direction:column}.tabs{width:100%;flex-direction:row;overflow-x:auto;border-inline-end:0;border-bottom:1px solid var(--border)}
 }
 </style>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
 </head>
 <body>
 <div id="bg"></div><div id="bg-dim"></div>
 
 <!-- Watermark -->
-<a href="https://instagram.com/imrvvvan__prv" target="_blank" style="position:fixed;bottom:15px;left:15px;z-index:9999;background:rgba(0,0,0,0.6);color:#fff;padding:8px 12px;border-radius:20px;font-size:14px;font-weight:bold;text-decoration:none;backdrop-filter:blur(5px);display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.2)">
+<a href="https://instagram.com/imrvvvan__prv/" target="_blank" style="position:fixed;bottom:15px;left:15px;z-index:9999;background:rgba(0,0,0,0.6);color:#fff;padding:8px 12px;border-radius:20px;font-size:14px;font-weight:bold;text-decoration:none;backdrop-filter:blur(5px);display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.2)">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-  @imrvvvan_prv
+  @imrvvvan__prv
 </a>
 
 <!-- Profiles -->
@@ -251,6 +261,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div class="search">
       <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input type="text" id="search-input" class="input focusable" data-i18n-ph="search" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
     </div>
     <div class="nav-actions">
       <button class="pill focusable" data-act="openExplore"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span data-i18n="explore"></span></button>
@@ -262,6 +273,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
   <div class="wrap">
     <section id="hero">
       <img id="hero-img" alt="">
+      <iframe id="hero-video" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       <div class="hero-shade"></div>
       <div class="hero-body">
         <div class="hero-meta" id="hero-meta"></div>
@@ -805,12 +817,33 @@ function renderMain(){
 function setHero(i, instant){
   const it = heroItems[i]; if(!it) return;
   heroIdx = i; const img = $('hero-img');
+  
+  // إخفاء الفيديو السابق
+  const video = $('hero-video');
+  video.style.opacity = '0';
+  setTimeout(() => { if(heroIdx !== i) return; video.style.display = 'none'; }, 500);
+
   const apply = () => {
     img.src = `${IMG}/w1280${it.backdrop}`; img.classList.remove('fade');
     $('hero-meta').textContent = `★ ${it.rating}  |  ${it.year}`;
     $('hero-title').textContent = it.title; $('hero-desc').textContent = it.desc;
     $('hero-play').dataset.key = it.key;
     document.querySelectorAll('#hero-dots .dot').forEach((d, j) => d.classList.toggle('on', j === i));
+    
+    // جلب التريلر وتشغيله ف الخلفية
+    if(!settings.lite) {
+      tmdb(`/${it.type === 'series' ? 'tv' : 'movie'}/${it.id}/videos`, {include_video_language: lang}).then(d => {
+        if(heroIdx !== i) return;
+        const vids = (d.results || []).filter(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
+        const v = vids.find(x => x.iso_639_1 === lang) || vids.find(x => x.iso_639_1 === 'en') || vids[0];
+        if(v) {
+          const url = `https://www.youtube.com/embed/${v.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${v.key}&playsinline=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3`;
+          video.src = url;
+          video.style.display = 'block';
+          setTimeout(() => { if(heroIdx === i) video.style.opacity = '1'; }, 200);
+        }
+      }).catch(() => {});
+    }
   };
   if(instant || settings.lite) apply(); else { img.classList.add('fade'); setTimeout(apply, 250); }
 }
@@ -821,7 +854,7 @@ function setupHeroTimer(){
   heroTimer = setInterval(() => {
     if(document.hidden || activeScreen() !== 'main-screen' || searchMode) return;
     setHero((heroIdx + 1) % heroItems.length);
-  }, 7000);
+  }, 10000); // غيرنا الوقت لـ 10 ثواني باش التريلر يبان
 }
 
 /* ============ ENDLESS ROWS ============ */
@@ -911,7 +944,30 @@ async function exGenres(){
 let searchTimer = null, searchSeq = 0;
 function onSearchInput(){
   clearTimeout(searchTimer); const q = $('search-input').value.trim();
-  searchTimer = setTimeout(() => doSearch(q), 300);
+  const sr = $('search-results');
+  
+  if(!q) { sr.style.display = 'none'; searchMode = false; renderMain(); return; }
+
+  searchTimer = setTimeout(async () => {
+    try {
+      const d = await tmdb('/search/multi', { query: q });
+      const items = (d.results || []).filter(r => (r.media_type === 'movie' || r.media_type === 'tv') && r.poster_path).slice(0, 5);
+      
+      if(items.length) {
+        sr.innerHTML = items.map(r => `
+          <a href="#" onclick="event.preventDefault(); document.getElementById('search-results').style.display='none'; openItem('${r.media_type === 'tv' ? 'series' : 'movie'}_${r.id}');">
+            <img src="${posterUrl({poster: r.poster_path})}" alt="">
+            <div style="display:flex;flex-direction:column">
+              <span style="font-weight:bold">${esc(r.title || r.name)}</span>
+              <span style="font-size:12px;color:var(--muted)">${(r.release_date || r.first_air_date || '').slice(0,4)}</span>
+            </div>
+          </a>`).join('');
+        sr.style.display = 'block';
+      } else {
+        sr.style.display = 'none';
+      }
+    } catch(e) { sr.style.display = 'none'; }
+  }, 300);
 }
 async function doSearch(q){
   const seq = ++searchSeq;
@@ -1187,6 +1243,7 @@ const actions = {
 };
 
 document.addEventListener('click', e => {
+  if(!e.target.closest('.search')) $('search-results').style.display = 'none';
   const rs = e.target.closest('[data-scroll]');
   if(rs){ const tr = rs.closest('.row').querySelector('.track'); const rtl = document.documentElement.dir === 'rtl'; tr.scrollBy({ left: (+rs.dataset.scroll) * (rtl ? -1 : 1) * tr.clientWidth * 0.85 }); return; }
   const fav = e.target.closest('[data-fav]'); if(fav){ e.stopPropagation(); toggleFav(fav.dataset.fav); return; }
@@ -1196,6 +1253,9 @@ document.addEventListener('click', e => {
 
 /* inputs */
 $('search-input').addEventListener('input', onSearchInput);
+$('search-input').addEventListener('keydown', e => { 
+  if(e.key === 'Enter') { $('search-results').style.display = 'none'; doSearch($('search-input').value.trim()); } 
+});
 $('pin-input').addEventListener('keydown', e => { if(e.key === 'Enter') verifyPin(); });
 $('cmt-text').addEventListener('keydown', e => { if(e.key === 'Enter') addComment(); });
 $('m-type').addEventListener('change', toggleAvatarPh);
@@ -1280,4 +1340,3 @@ ensureCatalog();
 </script>
 </body>
 </html>
-```
