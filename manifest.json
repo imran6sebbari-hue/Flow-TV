@@ -20,24 +20,38 @@
   "screenshots": [
     {
       "src": "screenshot1.jpg",
-      "sizes": "1080x1920",
+      "sizes": "1170x2532",
       "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "الواجهة الرئيسية"
     },
     {
       "src": "screenshot2.jpg",
-      "sizes": "1080x1920",
+      "sizes": "1170x2532",
       "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "صفحة التفاصيل"
     },
     {
       "src": "screenshot3.jpg",
-      "sizes": "1080x1920",
+      "sizes": "1170x2532",
       "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "الإعدادات"
+    },
+    {
+      "src": "screenshot4.jpg",
+      "sizes": "1170x2532",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "الملف الشخصي"
+    },
+    {
+      "src": "screenshot5.jpg",
+      "sizes": "1170x2532",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "إضافة حساب"
     }
   ]
 }
